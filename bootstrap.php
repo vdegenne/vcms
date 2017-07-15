@@ -4,15 +4,19 @@ use vcms\Project;
 
 
 require_once "Project.class.php";
+
 $Project = new Project();
-$Project->add_include_dirpaths(
-    __DIR__,
-    dirname(getcwd()) . '/' . Project::INCLUDES_DIRNAME
-);
+/*
+ * The include dirpaths are used for the autoloader.
+ * The autoloader will automatically search for the classes
+ * to include from these directories (recursively)
+ */
+$Project->location = dirname(getcwd()) . '/' . Project::INCLUDES_DIRNAME;
+$Project->add_include_dirpaths(__DIR__);
+$Project->add_include_dirpaths($Project->location);
 
 /* register the autoloader */
-require '__autoloader.inc.php';
-
+require_once '__autoloader.inc.php';
 
 //define('PROJECT_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
 //$PROJECT_PATH = PROJECT_PATH;

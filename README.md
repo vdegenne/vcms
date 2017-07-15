@@ -39,23 +39,26 @@ That's all your database is ready.
 
 Now your framework is already ready to be used.
 Before starting a project, it's important to think about the structure of your website.
-Generally speaking, we develop a website in a sources directory (e.g. `src` or `sources`). As your website will get complex, the files in the `src` directory will get mixed and minimized and thrown in a distribution directory (e.g. `dist` or `build`). So let's create an `index.php` file in the following structure,
+Generally, we develop a website in a sources directory (e.g. `src` or `sources`).
+As your website will get complex, the files in the `src` directory will get mixed and minimized and thrown in a distribution directory (e.g. `dist` or `build`).
+So let's create the following structure.
 
 ```
-.
-└── src
-    └── www
-        └── index.php
+/home/valentin/mywebsite
+                    └───src
+                        ├───includes
+                        └───www
+                                index.php
 ```
 
-(*You should tell Apache to serve php files from `./src/www/`, wherever your project is. Making a VirtualHost for example.*)
+**note1**:*You should tell Apache to serve php files from `./src/www/`, wherever your project is. Making a VirtualHost for example.*\
+**note2**:*everything in the `www` directory will be public, so every sensitive informations should be out of that location.*
 
 In your `index.php` file, all you need to do is to call the **bootstrap** file of the framework.
 
 ```php
 <?php
-
-require_once('/usr/local/include/php/vcms/bootstrap.php');
+require_once '/usr/local/includes/php/vcms/bootstrap.php';
 ```
 
-the bootstrap file initializes the projects for you. It defines the autoloader, set some useful variables for the projects, and prepare the database if any.
+The bootstrap file initializes the projects for you. It defines the autoloader, set some useful variables for the projects, and prepare the database if any.
