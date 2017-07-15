@@ -14,7 +14,7 @@
  * Creation date : 02/03/2015 (13:34)
  */
 
-namespace vdegenne;
+namespace vcms;
 
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -57,7 +57,7 @@ class FileSystem {
     if (!$subpath) { $subpath = $base; } 
 
     $directories = [];
-    $glob = $subpath . DS . '*';
+    $glob = "$subpath/*";
 
     foreach (glob($glob) as $file) {
       if (is_dir($file)) {
