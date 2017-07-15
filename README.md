@@ -31,10 +31,19 @@ If you have more than one database you can add new lines with the same password,
 
 That's all your database is ready.
 
-**note: If you want to rename the `.credentials` file. You can edit the `Database.class.php` file and change the constant `CREDENTIALS_FILENAME` in the class definition.**
+*note: If you want to rename the `.credentials` file. You can edit the `Database.class.php` file and change the constant `CREDENTIALS_FILENAME` in the class definition.*
 
 
 
 ## Prepare your website
 
 Now your framework is already ready to be used.
+Before starting a project, it's important to think about the structure of your website.
+Generally speaking, we develop a website in a sources directory (e.g. `src` or `sources`). As your website will get complex, the files in the `src` directory will get mixed and minimized and thrown in a distribution directory (e.g. `dist` or `build`). So let's create an `index.php` file in the following structure,
+
+```
+.
+└── src
+    └── www
+        └── index.php
+```

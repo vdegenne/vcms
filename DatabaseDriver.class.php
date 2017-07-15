@@ -1,7 +1,8 @@
 <?php
-namespace vdegenne;
+namespace vcms;
 
 class DatabaseDriver
 {
-    const POSTGRE_SQL = 0;
+    const POSTGRESQL = 0;
+    const MYSQL = 1;
 }

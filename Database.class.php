@@ -1,18 +1,21 @@
 <?php
 declare(strict_types = 1);
 
-namespace vdegenne;
+namespace vcms;
 
-use vdegenne\DatabaseDriver;
+use PDO;
 
-class Database extends \PDO {
 
-    /* constantes */
+
+class Database extends PDO {
+
+
     const CREDENTIALS_FILENAME = '.credentials';
-    const DEFAULT_DRIVER = DatabaseDriver::POSTGRE_SQL;
+    const DEFAULT_DRIVER = DatabaseDriver::POSTGRESQL;
 
   
-    /** @var \PDO
+    /**
+     * @var \PDO
      * In the current state of the system, a singleton object is what we needed
      * But if there are several databases to connect to. This singleton class
      * needs to converted to a normal class.
@@ -24,7 +27,7 @@ class Database extends \PDO {
      * @param string $host
      * @param string $dbname
      * @param integer $driver
-     * @return \PDO
+     * @return PDO
      */
     static public function get ($host = null, $dbname = null, $driver = self::DEFAULT_DRIVER)
     {
@@ -52,11 +55,16 @@ class Database extends \PDO {
             /* here are the different dsn based on the specified driver */
             switch ($driver) {
 
-            case DatabaseDriver::POSTGRE_SQL:
+            case DatabaseDriver::POSTGRESQL:
                 $dsn = "pgsql:host=$host;dbname=$dbname";
                 break;
+
+            case DatabaseDriver::MYSQL:
+                $dsn = "mysql:host=$host;dbname=$dbname"; // no accurate, to change
+                break;
+
             default:
-                trigger_error('no appropriate drivers.', E_USER_ERROR);
+                throw new Exception ('no appropriate drivers.');
             }
 
 
