@@ -47,3 +47,15 @@ Generally speaking, we develop a website in a sources directory (e.g. `src` or `
     └── www
         └── index.php
 ```
+
+(*You should tell Apache to serve php files from `./src/www/`, wherever your project is. Making a VirtualHost for example.*)
+
+In your `index.php` file, all you need to do is to call the **bootstrap** file of the framework.
+
+```php
+<?php
+
+require_once('/usr/local/include/php/vcms/bootstrap.php');
+```
+
+the bootstrap file initializes the projects for you. It defines the autoloader, set some useful variables for the projects, and prepare the database if any.

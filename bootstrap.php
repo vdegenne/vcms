@@ -1,189 +1,193 @@
 <?php
 
-/*
- * Copyright (C) 2015 Valentin
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-/**
- * Le fichier "bootstrap.php" a pour but de fournir des variables utiles pour
- * les sites-web, des variables sur les informations des chemins et éventu-
- * ellement sur le serveur.
- *
- * Il est donc importé en en-tête du fichier content.php principal du site-web
- * concerné, et modifié en conséquences selon les paramètres de la plateforme
- * qui l'héberge.
- */
-
 use vdegenne\FileSystem;
-use vdegenne\Projet;
+use vdegenne\Page;
 use vdegenne\Request;
+use vdegenne\QueryString;
+use vdegenne\User;
 use vdegenne\Website;
+use vdegenne\Database;
+use vdegenne\Domain;
+use vdegenne\Layout;
 
-require_once 'FileSystem.class.php';
+/* AUTOLOADER */
+require '__autoloaders.inc.php';
 
-
-define('DS', DIRECTORY_SEPARATOR);
-
-
+define('PROJECT_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
+$PROJECT_PATH = PROJECT_PATH;
 
 /**
- * __autoload
- *
- * Quand "bootstrap.php" est inclu dans une page web, il devient possible de
- * charger n'importe quels objets (classes) de la framework sans devoir spécifier
- * le chemin complet vers le dossier des includes.
- * Il en va de même avec les classes spécifiques du projet présentes dans le même
- * dossier des includes de la framework.
- *
- *
- * @param string $classPath l'identifiant de la classe à importer.
+ * the following lines will load the configurations of the website
+ * from 'config.json'. This json is separate so bootstrap can load
+ * the basic informations (e.g. the environment mode) and prepare
+ * the error handling type.
  */
-function __autoload ($classPath) {
-
-    // ici on gère l'éventuel namespace.
-    $className = explode('\\', $classPath);
-    $className = $className[count($className) - 1];
-
-    // variable utilisée pour repérer les doubles inclusions.
-    $classExists = false;
-
-    // inclusion de la classe de la framework
-    if (file_exists(
-        FRAMEWORK::$INCLUDES_PATH . DS . "$className.class.php"
-    )) {
-        include FRAMEWORK::$INCLUDES_PATH . DS . "$className.class.php";
-        $classExists = true;
-    }
+try {
+    /* load the json file */
+    $configJson = json_decode(file_get_contents(PROJECT_PATH . '/config.json'), true);
 
 
-    $projectIncludesPath = FRAMEWORK::$INCLUDES_PATH . DS . FRAMEWORK::$PROJECT_NAME;
-    /*
-     * tentative d'inclusion de la classe spécifique au projet.
-     * Il peut arriver que le dossier des includes du projet possède des
-     * sous-dossiers, on doit alors faire en sorte de cherche récursivement dans
-     * les sous-dossiers.
-     */
+    $GLOBALS['_ENV'] = $configJson['env'];
 
-    if (_autoload_subdirs($className, $projectIncludesPath)) {
-
-        if ($classExists) {
-            file_put_contents(
-                'log_warnings.txt',
-                'double inclusion de classes entre la framework et le projet ' .
-                FRAMEWORK::$PROJECT_NAME . '.'
-            );
-        }
-    }
+} catch (Exception $e) {
+    // in case the file doesn't exist
 }
 
+
+if ($_ENV == 'dev') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL | E_STRICT);
+}
+// ini_set('display_startup_errors', 1);
+
 /**
- * Permet de chercher et d'inclure une classe présente dans l'arborescence depuis
- * $dir.
- *
- * @param string $className le nom de la classe, sans le namespace donc.
- * @param string $dir       Le chemin absolu vers le dossier dans lequel on souhaite
- *                          rechercher
- *
- * @return bool true si la classe a été trouvée.
- * @throws ErrorException
- */
-function _autoload_subdirs ($className, $dir) {
+ * this two functions depend on the 'env' variable in the config.json file :
+ *  - dev : will print all errors and warnings directly on the page
+ *  - prod :  will silently throw the errors messages in the 'debug.log' file
+ at the root of the project path (PROJECT_PATH)
+*/
+set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 
-    if (file_exists($dir . DS . "$className.class.php")) {
-        include $dir . DS . "$className.class.php";
-
+    if ($_ENV !== 'dev') {
         return true;
     }
-    else {
 
-        // on récupère les dossiers du dossier actuel.
-        $dirs = FileSystem::get_directories($dir);
+    // tell php to use internal handler too (prints message on page)
+    return false;
+});
 
-        foreach ($dirs as $d) {
-            $found = _autoload_subdirs($className, $dir . DS . $d);
+register_shutdown_function(function () {
 
-            if ($found) {
-                return true;
-            }
+    if ($_ENV === 'prod') {
+  
+        if (($error = error_get_last()) !== null) {
+
+            file_put_contents(PROJECT_PATH . '/debug.log',
+            '['.time()."] $error[message]\n\n",
+            FILE_APPEND);
+
+            printf('%s',  "it seems like the page you trying to reach is unavailable<br>" .
+            "if the problem persists, please contact the administrator.");
         }
+
     }
 
-    return false;
-}
+});
+
+
+
 
 
 /**
- * Classe représentant les configurations de la framework.
- * Elle peut être utilisée pour changer des paramètres spécifiques au projet.
- *
- * @author Degenne Valentin
+ * CONSTANTS
  */
-class FRAMEWORK {
 
-    static $SUPER_ROOT = 'C:/localweb';
-    static $INCLUDES_FOLDER_NAME = 'includes';
-    static $INCLUDES_PATH;
-    static $SCRIPTS_LOCATION_ROOT;
-    static $SCRIPTS_EXTENSION = 'script.php';
-    static $PROJECT_PATH;
-    static $PROJECT_RELATIVE_PATH;
-    static $PROJECT_NAME;
+define('PROJECT_NAME', $configJson['project_name']);
+define('NL', "\n");
+$NL = NL;
+/* this varialbe is not very useful
+ * kept it for backward compatibility reasons.
+ */
+define('DS', DIRECTORY_SEPARATOR);
+$DS = DS;
 
-    static $LAYOUTS_FOLDER_NAME = 'layouts';
-    static $LAYOUTS_PATH;
+define('SUPER_ROOT', $configJson['super_root']);
+$SUPER_ROOT = SUPER_ROOT;
 
+
+define('INCLUDES_PATH', SUPER_ROOT . '/includes');
+$INCLUDES_PATH = INCLUDES_PATH;
+define('LAYOUTS_PATH', "$INCLUDES_PATH/" . Layout::LAYOUTS_DIRNAME);
+$LAYOUTS_PATH = LAYOUTS_PATH;
+
+/* the relative URI generated from the logical redirection
+ * (see. htaccess file) */
+define('REL_URI', $_GET['relURI']);
+$REL_URI = REL_URI;
+
+
+
+/**
+ * Defining the Domain object
+ */
+$Domain = new Domain($_SERVER['SERVER_NAME']);
+$Domain->localPath =  ($configJson['build_type'] === 'debug')
+    ? "$PROJECT_PATH/www"
+    : "$PROJECT_PATH/www";
+
+// should use $_SERVER['HTTP_HOST'] instead
+define('DOMAIN', $Domain->name);
+$DOMAIN = DOMAIN;
+
+
+
+if ($Domain->has_master_domain()) {
+    // Master Domain
+    $MDomain = $Domain->MasterDomain;
+    if ($configJson['master_domain_relativepath']) {
+        $MDomain->localPath = "$SUPER_ROOT/{$configJson['master_domain_relativepath']}";
+    }
+    define('MDOMAIN', $MDomain->name);
+    $MDOMAIN = MDOMAIN;
 }
 
-FRAMEWORK::$INCLUDES_PATH
-    = FRAMEWORK::$SUPER_ROOT . DS . FRAMEWORK::$INCLUDES_FOLDER_NAME;
-FRAMEWORK::$SCRIPTS_LOCATION_ROOT = FRAMEWORK::$SUPER_ROOT . DS . 'scripts';
-FRAMEWORK::$PROJECT_PATH = $_SERVER['DOCUMENT_ROOT'];
-FRAMEWORK::$PROJECT_RELATIVE_PATH
-    = substr(FRAMEWORK::$PROJECT_PATH, strlen(FRAMEWORK::$SUPER_ROOT) + 1);
-FRAMEWORK::$PROJECT_NAME = basename($_SERVER['DOCUMENT_ROOT']);
-FRAMEWORK::$LAYOUTS_PATH
-    = FRAMEWORK::$INCLUDES_PATH . DS . FRAMEWORK::$LAYOUTS_FOLDER_NAME;
+// require_once('scripts/session.script.php');
+
+
+
+/**
+ * @var Request
+ */
+$Request = Request::get(REL_URI, $Domain);
+define('HREFLANG', $Request->lang);
+/**
+ * @var Website
+ */
+$Website = $Request->Website;
+/**
+ * @var Page
+ */
+$Page = $Request->Page;
+/**
+ * @var Querystring
+ */
+$QS = $Request->QueryString;
+$QS->delete_argument('relURI');
+$QS->delete_argument('hl');
 
 
 
 
+if ($Page->needsSession) {
+    if (!isset($_SESSION['User'])) {
+        $_SESSION['User'] = new User();
+    }
+    $User = $_SESSION['User'];
+}
+else {
+    $User = new User();
+}
+$User->hreflang = $Request->lang;
 
 
 
-
-$WEBSITE = Website::get();
-$WEBSITE->set_domainName($_SERVER['SERVER_NAME']);
-
-
-$REQUEST = Request::get();
-$QUERY_STRING = $REQUEST->get_QueryString();
-
-
-if (!$QUERY_STRING->has('url')) {
-    exit('l\'argument \'requested_page\' n\'a pas été défini.');
+if (!$Page->exists()) {
+    $Page->relPath = '404';
 }
 
-$REQUEST->set_url(
-    $QUERY_STRING->get('requested_page')
-);
 
 
-$QUERY_STRING->del_argument('requested_page');
 
-$WEBSITE->set_request($REQUEST);
+if ($Page->needsDatabase)
+    {
+        $Database = Database::get($configJson['db_hostname'], 'degennevbase');
+    }
 
-$PAGE = $REQUEST->make_page($WEBSITE);
-$PAGE->load_metadatas();
 
+$Layout = new Layout();
+
+
+function mkurl () {
+    global $Request;
+    return call_user_func_array([$Request, 'mkurl'], func_get_args());
+}
