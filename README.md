@@ -21,4 +21,20 @@ you need to set up one.
 
 ### Prepare the database
 
-To prepare the database, you need to create a file called `.credentials` on the root of the framework directory.
+To prepare the database, open `.credentials` file in the framework directory. and replace the example line with your values, for instance,
+
+```
+localhost:MyWebsiteDatabase:secr3tPa55word
+```
+
+If you have more than one database you can add new lines with the same password, the `.credentials` file keeps your database connection informations and later you can tell the framework which database to use for a specific script or website page.
+
+That's all your database is ready.
+
+**note: If you want to rename the `.credentials` file. You can edit the `Database.class.php` file and change the constant `CREDENTIALS_FILENAME` in the class definition.**
+
+
+
+## Prepare your website
+
+Now your framework is already ready to be used.
