@@ -1,6 +1,5 @@
 <?php
-
-namespace vdegenne;
+namespace vcms;
 
 /**
  * Class Domain

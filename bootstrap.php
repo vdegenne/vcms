@@ -1,7 +1,7 @@
 <?php
 use vcms\Project;
-
-
+use vcms\Request;
+use Lol\Test;
 
 require_once "Project.class.php";
 
@@ -11,31 +11,36 @@ $Project = new Project();
  * The autoloader will automatically search for the classes
  * to include from these directories (recursively)
  */
-$Project->location = dirname(getcwd()) . '/' . Project::INCLUDES_DIRNAME;
+$Project->location = dirname(getcwd());
 $Project->add_include_dirpaths(__DIR__);
-$Project->add_include_dirpaths($Project->location);
+$Project->add_include_dirpaths($Project->location . '/' . Project::INCLUDES_DIRNAME);
 
 /* register the autoloader */
 require_once '__autoloader.inc.php';
 
-//define('PROJECT_PATH', dirname($_SERVER['DOCUMENT_ROOT']));
-//$PROJECT_PATH = PROJECT_PATH;
-//
-///**
-// * the following lines will load the configurations of the website
-// * from 'config.json'. This json is separate so bootstrap can load
-// * the basic informations (e.g. the environment mode) and prepare
-// * the error handling type.
-// */
+
+/* the http request object with some useful properties */
+$Request = Request::get();
+
+
+$Resource = $Request->generate_resource();
+
+
+
+/**
+ * the following lines will load the configurations of the website
+ * from 'config.json'. This json is separate so bootstrap can load
+ * the basic informations (e.g. the environment mode) and prepare
+ * the error handling type.
+ */
+
 //try {
-//    /* load the json file */
-//    $configJson = json_decode(file_get_contents(PROJECT_PATH . '/config.json'), true);
-//
+//    /* load the configuration file */
 //
 //    $GLOBALS['_ENV'] = $configJson['env'];
 //
 //} catch (Exception $e) {
-//    // in case the file doesn't exist
+//    throw new Exception("no configuration file found.");
 //}
 //
 //
@@ -78,28 +83,20 @@ require_once '__autoloader.inc.php';
 //    }
 //
 //});
-//
-//
-//
-//
-//
-///**
-// * CONSTANTS
-// */
-//
-//define('PROJECT_NAME', $configJson['project_name']);
-//define('NL', "\n");
-//$NL = NL;
-///* this varialbe is not very useful
-// * kept it for backward compatibility reasons.
-// */
-//define('DS', DIRECTORY_SEPARATOR);
-//$DS = DS;
-//
+
+
+
+
+
+/**
+ * CONSTANTS
+ */
+
+// define('PROJECT_NAME', $configJson['project_name']);
+
 //define('SUPER_ROOT', $configJson['super_root']);
 //$SUPER_ROOT = SUPER_ROOT;
-//
-//
+
 //define('INCLUDES_PATH', SUPER_ROOT . '/includes');
 //$INCLUDES_PATH = INCLUDES_PATH;
 //define('LAYOUTS_PATH', "$INCLUDES_PATH/" . Layout::LAYOUTS_DIRNAME);
@@ -107,7 +104,7 @@ require_once '__autoloader.inc.php';
 //
 ///* the relative URI generated from the logical redirection
 // * (see. htaccess file) */
-//define('REL_URI', $_GET['relURI']);
+
 //$REL_URI = REL_URI;
 //
 //
@@ -143,7 +140,7 @@ require_once '__autoloader.inc.php';
 ///**
 // * @var Request
 // */
-//$Request = Request::get(REL_URI, $Domain);
+
 //define('HREFLANG', $Request->lang);
 ///**
 // * @var Website
@@ -196,3 +193,14 @@ require_once '__autoloader.inc.php';
 //    global $Request;
 //    return call_user_func_array([$Request, 'mkurl'], func_get_args());
 //}
+
+/*******
+ * Processing the content of the resource.
+ */
+ob_start();
+include_once $Resource->contentFilepath;
+$Resource->content = ob_get_contents();
+ob_end_clean();
+/*******
+ * End of processing
+ */

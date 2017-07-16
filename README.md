@@ -21,13 +21,25 @@ you need to set up one.
 
 ### Prepare the database
 
-To prepare the database, open `.credentials` file in the framework directory. and replace the example line with your values, for instance,
+To prepare the database, create a file named `.credentials` in the root of the framework directory. And add a line with the following syntax :
 
 ```
-localhost:MyWebsiteDatabase:secr3tPa55word
+<db_handler>:<driver>:<database_ip>:<database_name>:<database_user>:<database_user_password>
 ```
 
-If you have more than one database you can add new lines with the same password, the `.credentials` file keeps your database connection informations and later you can tell the framework which database to use for a specific script or website page.
+-**<db_handler>**: a unique identifier to use in later in the framework to refer to the `dns`.\
+-**\<driver\>**: one of the following, **pgsql**, **mysql**.\
+-**<database_ip>**: the ip address of the database.\
+-**<database_name>**: the name of the database to use.\
+-**<database_user>**: the user to use for the connection.\
+-**<database_user_password>**: the password of the previous username.\
+ 
+for instance, the following line is valid.
+```text
+localdb:pgsql:192.168.204.152:my_database:postgres:12345
+```
+
+You can register as many endpoints as you want, just add a new line for each connection informations in the `.credentials` file. The `.credentials` keeps your database connection informations and later you can tell the framework which database to use for a specific script or website page.
 
 That's all your database is ready.
 
@@ -41,18 +53,41 @@ Now your framework is already ready to be used.
 Before starting a project, it's important to think about the structure of your website.
 Generally, we develop a website in a sources directory (e.g. `src` or `sources`).
 As your website will get complex, the files in the `src` directory will get mixed and minimized and thrown in a distribution directory (e.g. `dist` or `build`).
-So let's create the following structure.
+
+The **[vcms-project-starter]()** provides a minimal structure for a `vcms` project. The project structure and files are important in `vcms`. Respecting this structure ensures that `vcms` will work properly and, one rock two birds, it'll give you a very consistent starting point for building all kind of projects, from websites to enterprise object, because the file-structure were optimized and is not just vcms-wise.
+
+However, I will in the next of this tutorial creates the directories and files for a new `vcms` project, so you can really understand how the framework works.
+
+So let's start with the following structure.
 
 ```
-/home/valentin/mywebsite
-                    └───src
-                        ├───includes
-                        └───www
-                                index.php
+.
+└── src
+    ├── config.json
+    ├── includes
+    ├── pages
+    └── www
+        └── index.php
 ```
 
-**note1**:*You should tell Apache to serve php files from `./src/www/`, wherever your project is. Making a VirtualHost for example.*\
-**note2**:*everything in the `www` directory will be public, so every sensitive informations should be out of that location.*
+-**note1**:*You should tell Apache to serve php files from `./src/www/`, wherever your project is. Making a VirtualHost for example.*\
+-**note2**:*the `mod_rewrite` apache module MUST be installed in order for the framework to work.*\
+-**note3**:*everything in the `www` directory will be public, so every sensitive informations should be out of that location.*
+
+### project configuration (config.json) 
+
+Before bootstrapping and creating the pages, we need to edit the `config.json`. This file gives some project informations to the framework that can't otherwise be deducted by the bootstrap process.
+
+`config.json` is a basic json file and here are the possible values.
+
+```json
+{
+  "project_name": "<your_project_name>",
+  
+}
+```
+
+### bootstraping
 
 In your `index.php` file, all you need to do is to call the **bootstrap** file of the framework.
 
@@ -62,3 +97,9 @@ require_once '/usr/local/includes/php/vcms/bootstrap.php';
 ```
 
 The bootstrap file initializes the projects for you. It defines the autoloader, set some useful variables for the projects, and prepare the database if any.
+
+## the pages
+
+Before creating a page to demonstrate how the framework manages them, we have to understand how they are organized. A page location is matching the exact same path of the http request uri. For instance if a user requests `http://example.com/welcome`, the path to the page is `./pages/welcome/.`. This way we always know where the page remains and can locate it quickly.
+
+(note: you can change this behavior either in`.htaccess` or 

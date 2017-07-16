@@ -1,43 +1,81 @@
 <?php
 
-namespace vdegenne;
+namespace vcms;
 
 
-class Resource {
+class Resource extends VcmsObject
+{
+    /**
+     * The REPO is the location of all the registered resources.
+     * You can manually create your resource from an object.
+     * Or you can persist and create one in the repo following the
+     * Always see the dirpaths starting from the `www` directory.
+     */
+    const REPO_DIRPATH = '../resources';
 
-    /** @var string */
-    protected $url;
-    /** @var Domain */
-    protected $Domain;
-    /** @var bool */
-    protected $inline;
-
-
-    public function __construct ($url, Domain $Domain = null, $inline = true) {
-        $this->url = $url;
-        $this->Domain = $Domain;
-        $this->inline = $inline;
-    }
+    const RESOURCE_CONTENT_FILENAME = 'content.php';
 
 
-    public function set_Domain (Domain $Domain) {
-        $this->Domain = $Domain;
-    }
+    /**
+     * The request which invoked the Resource.
+     * Or null if Resource was manually created.
+     * @var Resource|null
+     */
+    protected $Request;
 
-    public function has_Domain () { return !is_null($this->Domain); }
+    /**
+     * filepath of the resource content.
+     * @var string
+     */
+    protected $contentFilepath;
 
-    public function get_localPath () {
-        return $this->Domain->localPath . '/' . ltrim($this->url, '/');
-    }
+    /**
+     * The raw content as fetched in the local file of the resource.
+     * @var string
+     */
+    protected $content;
 
-    public function get_url () {
-        if (!is_null($this->Domain)) {
-            return "http://{$this->Domain->name}/" . ltrim($this->url, '/');
+    /**
+     * Either the resource was found or not.
+     * null if the resource is not fetched from the REPO.
+     * @var boolean|null
+     */
+    protected $exists = null;
+
+
+    function __construct (Request $Request = null)
+    {
+        if ($Request !== null) {
+            $this->Request = $Request;
+            $this->update();
         }
-        else {
-            return $this->url;
+    }
+
+
+    private function update ()
+    {
+        $this->contentFilepath = sprintf(
+            self::REPO_DIRPATH.'/%s/'.self::RESOURCE_CONTENT_FILENAME,
+            $this->Request->requestURI
+        );
+
+        if (($this->exists = file_exists($this->contentFilepath)) === false)
+        {
+            return;
         }
     }
 
-    public function is_inline () { return $this->inline; }
+
+    function __set($name, $value)
+    {
+        parent::__set($name, $value);
+
+        switch ($name) {
+            case 'contentFilepath':
+                $this->update();
+                break;
+        }
+    }
+
+
 }

@@ -1,79 +1,93 @@
 <?php
+namespace vcms;
 
-namespace vdegenne;
 
-class QueryString
+class QueryString extends VcmsObject
 {
     
-    /** @var array */
+    /**
+     * @var array
+     */
     protected $arguments = [];
 
 
-    
-    public function __construct($arguments = []) {
+
+
+    public function __construct ($arguments = [])
+    {
         $this->arguments = $arguments;
     }
 
-    public function to_string() {
-        return http_build_query($this->arguments);
-    }
 
-    public function __toString() {
-        return http_build_query($this->arguments);
-    }
-
-    static public function http_build_query(array $params) {
-        $query = http_build_query($params); // php pre-built function
-        return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
-    }
+    // see __toString
+//    public function to_string () {
+//        return http_build_query($this->arguments);
+//    }
 
 
-    public function add_argument(array $arguments) {
-        foreach ($arguments as $argKey => $argVal) {
+    function add_arguments (array $args)
+    {
+        foreach ($args as $argKey => $argVal) {
             $this->arguments[$argKey] = $argVal;
         }
     }
 
-    public function delete_argument($value) {
-        if (array_key_exists($value, $this->arguments)) {
-            unset($this->arguments[$value]);
+
+    function delete_argument ($arg) : bool
+    {
+        if (array_key_exists($arg, $this->arguments)) {
+            unset($this->arguments[$arg]);
+            return true;
         }
+        return false;
     }
 
-    public function has(...$params) {
 
+    function has(...$params)
+    {
         $paramsCount = 0;
-        
-        foreach ($params as $p) {            
+
+        foreach ($params as $p) {
             if (array_key_exists($p, $this->arguments)) {
                 $paramsCount++;
             }
         }
 
-        if ($paramsCount == count($params)) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return ($paramsCount == count($params));
     }
-    
-    public function get($key) {
+
+
+
+    function get($key)
+    {
         if ($this->has($key)) {
             return $this->arguments[$key];
         } else
             return false;
     }
-  
-    public function __get($k) {
-        if ($this->has($k)) {
-            return $this->arguments[$k];
+
+
+
+    function __get($name)
+    {
+        if ($this->has($name)) {
+            return $this->arguments[$name];
         }
-        return $this->{$k};
+        // else
+        return parent::__get($name);
     }
 
-    public function get_arguments() {
-        return $this->arguments;
+
+
+    function __toString ()
+    {
+        return http_build_query($this->arguments);
     }
 
+
+    static function http_build_query (array $params) : string
+    {
+        $query = http_build_query($params); // php pre-built function
+        return preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $query);
+    }
 }
