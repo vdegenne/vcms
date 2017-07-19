@@ -8,7 +8,7 @@ class ResourceType
 
     function __get($name)
     {
-        switch ($name) {
+        switch (strtolower($name)) {
             case 'web':
                 return self::WEB;
                 break;

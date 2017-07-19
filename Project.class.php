@@ -1,14 +1,18 @@
 <?php
 namespace vcms;
 
-require_once 'VcmsObject.class.php';
+use vcms\utils\Object;
 
+require_once 'ProjectConfig.class.php';
+require_once 'VcmsObject.class.php';
+require_once 'Object.class.php';
 
 
 class Project extends VcmsObject
 {
     const INCLUDES_DIRNAME = 'includes';
-    const CONFIGURATION_FILENAME = 'config.json';
+    const CONFIGURATION_FILENAME = 'project.json';
+
 
     /**
      * @var Array
@@ -20,7 +24,11 @@ class Project extends VcmsObject
      */
     protected $location;
 
-    protected $configJson;
+    /**
+     * Configuration Object of the Project.
+     * @var ProjectConfig
+     */
+    protected $Config;
 
 
 
@@ -33,15 +41,16 @@ class Project extends VcmsObject
         $this->include_dirpaths[] = $p;
     }
 
-    function get_include_dirpaths() { return $this->include_dirpaths; }
+    function get_include_dirpaths () { return $this->include_dirpaths; }
 
-    private function update () {
+    private function update ()
+    {
         $configFilepath = $this->location . '/' . self::CONFIGURATION_FILENAME;
         if (!file_exists($configFilepath)) {
             throw new \Exception('configuration file not found.');
         }
 
-        $this->configJson = json_decode(file_get_contents($configFilepath), true);
+        $this->Config = Object::cast(json_decode(file_get_contents($configFilepath)), '\\vcms\\ProjectConfig');
     }
 
     function __set($name, $value)

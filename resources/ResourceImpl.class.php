@@ -2,7 +2,14 @@
 namespace vcms\resources;
 
 
+use vcms\resources\implementations\RESTResource; // temporary
+use vcms\Request;
+use vcms\resources\implementations\RESTResourceConfig;
+use vcms\resources\implementations\WebResource;
+use vcms\resources\implementations\WebResourceConfig;
 use vcms\VcmsObject;
+use vcms\utils\Object;
+use Exception;
 
 abstract class ResourceImpl extends VcmsObject
 {
@@ -55,12 +62,6 @@ abstract class ResourceImpl extends VcmsObject
      */
     protected $content;
 
-    /**
-     * The processed content. In case of a php file.
-     * @var string
-     */
-    protected $processedContent;
-
 
     /**
      * Either the resource was found or not.
@@ -77,72 +78,86 @@ abstract class ResourceImpl extends VcmsObject
             $this->Request = $Request;
             $this->update();
         }
-
     }
-
 
 
     /* UPDATE */
     abstract function update ();
-    public function update_impl ()
+    public function __update ()
     {
         /* load the configuration file */
         $this->load_configuration();
         /* load the content file */
-        $this->load_content();
-
-        return true;
+        $this->resolve_content(null);
     }
+
 
     /* LOAD CONFIGURATION */
     abstract function load_configuration ();
-    private function load_configuration_impl ()
+    protected function __load_configuration ()
     {
         $configFilepath = sprintf('%s/%s/%s',
-            self::REPO_DIRPATH,
+            $this::REPO_DIRPATH,
             $this->Request->requestURI,
-            self::RESOURCE_CONFIG_FILENAME);
+            $this::RESOURCE_CONFIG_FILENAME);
 
         if (!file_exists($configFilepath))
         {
             throw new Exception('configuration file not found.');
         }
 
-        $this->Config = new ResourceConfig();
-        Object::cast(json_decode(file_get_contents($configFilepath)), $this->Config);
+        /* get the type of the resource */
+        $jsonConfig = json_decode(file_get_contents($configFilepath));
+
+        try {
+            $ResourceConfigClassName = ('vcms\\resources\\implementations\\'. $jsonConfig->type . 'ResourceConfig');
+            $Config = new $ResourceConfigClassName;
+        }
+        catch (Exception $e) {
+            throw new Exception ('property "type" not declared in the configuration.');
+        }
 
 
-        $this->type = (new ResourceType)->{$this->Config->type};
+        if ($this->Config !== null) {
+            $props = (new \ReflectionObject($this->Config))->getProperties(\ReflectionProperty::IS_PROTECTED);
+            foreach (get_object_vars($jsonConfig) as $propName => $propValue) {
+                $this->Config->{$propName} = $propValue;
+            }
+        }
+        else {
+            $this->Config = $Config;
+            Object::cast($jsonConfig, $this->Config);
+        }
+
     }
 
 
-    abstract function load_content ();
-    private function load_content_impl ()
+    abstract function resolve_content (string $contentFilename = null);
+    protected function __resolve_content (string $contentFilename = null)
     {
-        $contentFilepathGlob = sprintf('%s/%s/%s.*',
-            self::REPO_DIRPATH,
+        $contentFilepathGlob = sprintf('%s/%s/%s*',
+            $this::REPO_DIRPATH,
             $this->Request->requestURI,
-            self::RESOURCE_CONTENT_FILENAME
+            ($contentFilename !== null) ? $contentFilename : $this::RESOURCE_CONTENT_FILENAME
         );
 
         $globfiles = glob($contentFilepathGlob);
 
-        if (count($globfiles) === 0) {
-            throw new Exception('no content file.');
-        }
+        $this->exists = (count($globfiles) > 0);
 
-        $this->contentFilepath = $globfiles[0];
-        $this->content = file_get_contents($this->contentFilepath);
+        if ($this->exists) {
+            $this->contentFilepath = $globfiles[0];
+        }
     }
 
 
 
-    abstract function __set ();
-    function __set_impl ($name, $value)
+    function __set ($name, $value)
     {
         parent::__set($name, $value);
 
         switch ($name) {
+            case 'Request':
             case 'contentFilepath':
                 $this->update();
                 break;
@@ -151,5 +166,27 @@ abstract class ResourceImpl extends VcmsObject
 
     public function preprocess () {
 
+    }
+
+
+    static function getResource ($type, $Configs = null) {
+        switch ($type) {
+            case ResourceType::REST:
+                $R = new RESTResource();
+                $C = new RESTResourceConfig();
+                break;
+            case ResourceType::WEB:
+                $R = new WebResource();
+                $C = new WebResourceConfig();
+                break;
+            // ...
+        }
+
+        if ($Configs !== null) {
+            Object::cast($Configs, $C);
+            $R->Config = $C;
+        }
+
+        return $R;
     }
 }

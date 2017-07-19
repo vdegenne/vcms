@@ -3,6 +3,10 @@ namespace vcms;
 
 
 use vcms\resources\Resource;
+use vcms\resources\ResourceImpl;
+use vcms\resources\ResourceType;
+use vcms\resources\implementations\ResourceConfig;
+use vcms\Response\Response;
 
 class Request extends VcmsObject
 {
@@ -17,6 +21,13 @@ class Request extends VcmsObject
      * @var string
      */
     protected $requestURI;
+
+
+    /**
+     * The method of the HTTP Request (GET, POST, ...)
+     * @var string
+     */
+    protected $method;
 
 
 
@@ -55,6 +66,7 @@ class Request extends VcmsObject
     private function __construct()
     {
         $this->requestURI = trim($_SERVER['REDIRECT_URL'], '/');
+        $this->method = $_SERVER['REQUEST_METHOD'];
 
         // $this->Domain = $Domain;
 
@@ -86,10 +98,33 @@ class Request extends VcmsObject
     }
 
 
+    function prepare_response () {
+        $Response = new Response();
+        $Response->Request = $this;
+        return $Response;
+    }
 
-    function generate_resource ()
+
+    function generate_resource ($Configs)
     {
-        return new Resource($this);
+
+        /* get the configuration file of the resource */
+        $resourceConfigFilepath = sprintf('%s/%s/%s',
+            ResourceImpl::REPO_DIRPATH,
+            $this->requestURI,
+            ResourceImpl::RESOURCE_CONFIG_FILENAME
+        );
+
+        if (!file_exists($resourceConfigFilepath)) {
+            throw new \Exception('the configuration file was not found.');
+        }
+
+        $configJson = json_decode(file_get_contents($resourceConfigFilepath));
+
+        $Resource = ResourceImpl::getResource((new ResourceType())->{$configJson->type}, $Configs);
+        $Resource->Request = $this;
+
+        return $Resource;
     }
 
 

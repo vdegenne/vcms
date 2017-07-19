@@ -1,8 +1,8 @@
 <?php
-use vcms\utils\Object;
 use vcms\Project;
 use vcms\Request;
-use vcms\resources\rest\RESTResource;
+use vcms\database\Database;
+
 
 require_once "Project.class.php";
 
@@ -22,12 +22,15 @@ require_once '__autoloader.inc.php';
 
 /* the http request object with some useful properties */
 $Request = Request::get();
+$QueryString = $Request->QueryString;
 
 
-$Resource = $Request->generate_resource();
+$Resource = $Request->generate_resource($Project->Config);
 
-
-
+/* prepare the database */
+if ($Resource->Config->needs_database) {
+    $Database = Database::get_from_handler($Resource->Config->database);
+}
 
 /**
  * the following lines will load the configurations of the website
@@ -212,13 +215,26 @@ $Resource = $Request->generate_resource();
 //
 //$Resource->preprocess();
 //
-///* Processing switch */
-//switch ($Resource->type) {
-//    case \vcms\resources\ResourceType::REST:
-//
-//        ob_start();
-//        include_once $Resource->contentFilepath;
-//        $Resource->processedContent = ob_get_contents();
-//        ob_end_clean();
-//        break;
-//}
+/* Processing switch */
+switch ($Resource->type) {
+    case \vcms\resources\ResourceType::WEB:
+        ob_start();
+        include_once $Resource->structureFilepath;
+        $Resource->content = ob_get_contents();
+        ob_end_clean();
+        break;
+
+
+    case \vcms\resources\ResourceType::REST:
+        ob_start();
+        include_once $Resource->contentFilepath;
+        $Resource->content = ob_get_contents();
+        ob_end_clean();
+        break;
+}
+
+
+$Response = $Request->prepare_response();
+$Response->Resource = $Resource;
+
+$Response->send();
