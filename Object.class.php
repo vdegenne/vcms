@@ -17,14 +17,13 @@
  *
  * Creation date : 13/02/2015 (13:27)
  */
-
-namespace vdegenne;
+namespace vcms\utils;
 
 
 class Object
 {
 
-    static function cast($sourceObject, $destination)
+    static function cast ($sourceObject, $destination)
     {
         if (is_string($destination)) {
             $destination = new $destination();
@@ -41,7 +40,7 @@ class Object
                 $propDest->setAccessible(true);
                 $propDest->setValue($destination, $value);
             } else {
-//                $destination->$name = $value;
+                $destination->$name = $value;
             }
         }
         return $destination;

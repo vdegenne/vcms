@@ -1,7 +1,8 @@
 <?php
-
 namespace vcms;
 
+
+use vcms\resources\Resource;
 
 class Request extends VcmsObject
 {
