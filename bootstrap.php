@@ -199,39 +199,7 @@ if ($Resource->Config->needs_database) {
 //    return call_user_func_array([$Request, 'mkurl'], func_get_args());
 //}
 
-
-///* Casting switch */
-//switch ($Resource->type) {
-//    case \vcms\resources\ResourceType::REST:
-//        /* change the resource to a RESTResource. */
-//        $Resource = Object::cast($Resource, 'vcms\resources\implementations\RESTResource');
-//
-////        ob_start();
-////        include_once $Resource->contentFilepath;
-////        $Resource->processedContent = ob_get_contents();
-////        ob_end_clean();
-//        break;
-//}
-//
-//$Resource->preprocess();
-//
-/* Processing switch */
-switch ($Resource->type) {
-    case \vcms\resources\ResourceType::WEB:
-        ob_start();
-        include_once $Resource->structureFilepath;
-        $Resource->content = ob_get_contents();
-        ob_end_clean();
-        break;
-
-
-    case \vcms\resources\ResourceType::REST:
-        ob_start();
-        include_once $Resource->contentFilepath;
-        $Resource->content = ob_get_contents();
-        ob_end_clean();
-        break;
-}
+require_once "scripts/resource_processing.inc.php";
 
 
 $Response = $Request->prepare_response();
