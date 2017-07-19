@@ -54,7 +54,7 @@ Before starting a project, it's important to think about the structure of your w
 Generally, we develop a website in a sources directory (e.g. `src` or `sources`).
 As your website will get complex, the files in the `src` directory will get mixed and minimized and thrown in a distribution directory (e.g. `dist` or `build`).
 
-The **[vcms-project-starter]()** provides a minimal structure for a `vcms` project. The project structure and files are important in `vcms`. Respecting this structure ensures that `vcms` will work properly and, one rock two birds, it'll give you a very consistent starting point for building all kind of projects, from websites to enterprise object, because the file-structure were optimized and is not just vcms-wise.
+The **[vcms-project-starter](https://github.com/vdegenne/vcms-project-starter)** provides a minimal structure for a `vcms` project. The project structure and files are important in `vcms`. Respecting this structure ensures that `vcms` will work properly and, one rock two birds, it'll give you a very consistent starting point for building all kind of projects, from websites to enterprise object, because the file-structure were optimized and is not just vcms-wise.
 
 However, I will in the next of this tutorial creates the directories and files for a new `vcms` project, so you can really understand how the framework works.
 
