@@ -1,8 +1,11 @@
 <?php
+use vcms\resources\ResourceType;
+
+
 
 /* Processing switch */
 switch ($Resource->type) {
-    case \vcms\resources\ResourceType::WEB:
+    case ResourceType::WEB:
         ob_start();
         include_once $Resource->structureFilepath;
         $Resource->content = ob_get_contents();
@@ -10,7 +13,7 @@ switch ($Resource->type) {
         break;
 
 
-    case \vcms\resources\ResourceType::REST:
+    case ResourceType::REST:
         ob_start();
         include_once $Resource->contentFilepath;
         $Resource->content = ob_get_contents();

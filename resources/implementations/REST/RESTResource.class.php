@@ -8,6 +8,7 @@ use vcms\resources\ResourceImpl;
 
 class RESTResource extends ResourceImpl
 {
+
     protected $type = ResourceType::REST;
 
 

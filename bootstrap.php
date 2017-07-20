@@ -1,8 +1,11 @@
 <?php
 use vcms\Project;
 use vcms\Request;
+use vcms\Session;
+use vcms\User;
 use vcms\database\Database;
-
+use vcms\utils\Authentication;
+use vcms\utils\Object;
 
 require_once "Project.class.php";
 
@@ -26,11 +29,51 @@ $QueryString = $Request->QueryString;
 
 
 $Resource = $Request->generate_resource($Project->Config);
+if (!$Resource->exists) {
+    $Request->requestURI = '404';
+    $Resource = $Request->generate_resource($Project->Config);
+}
 
 /* prepare the database */
+$Database = null;
 if ($Resource->Config->needs_database) {
     $Database = Database::get_from_handler($Resource->Config->database);
 }
+
+$Session = Session::open();
+if ($Session->User === null) {
+    $Session->User = new User();
+}
+
+
+
+if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated)
+{
+    header('Location: ' . $Resource->Config->authentication_uri);
+    exit();
+}
+if ($Resource->Config->is_auth_page)
+{
+    $Authentication = null;
+
+    /* if no Database, we create for the authentication */
+    if ($Resource->Config->authentication_db !== null) {
+        $Authentication = Authentication::create_from_handler(
+            $Resource->Config->authentication_db,
+            $Resource->Config->authentication_table
+        );
+    } else if ($Resource->Config->database !== null) {
+        $Authentication = Authentication::create_from_handler(
+            $Resource->Config->database,
+            $Resource->Config->authentication_table
+        );
+    } else {
+        throw new Exception('no database were specified for the authentication.');
+    }
+}
+
+
+
 
 /**
  * the following lines will load the configurations of the website

@@ -20,6 +20,7 @@ class Response extends VcmsObject
 
     function send ()
     {
+        header('Content-type: ' . $this->Resource->Config->mimetype);
         echo $this->Resource->content;
     }
 }

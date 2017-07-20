@@ -1,10 +1,10 @@
 <?php
 namespace vcms\resources\implementations;
 
-use vcms\VcmsObject;
-
+use vcms\resources\ResourceConfig;
 
 
 class RESTResourceConfig extends ResourceConfig
 {
+    protected $mimetype = 'application/json';
 }

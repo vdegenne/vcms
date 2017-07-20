@@ -128,6 +128,26 @@ class Request extends VcmsObject
     }
 
 
+    static function has_arguments ($array, $values) {
+        $count = 0;
+        foreach ($values as $v) {
+            if (array_key_exists($v, $array)) {
+                $count++;
+            }
+        }
+        return $count === count($values);
+    }
+
+    static function has_post (...$values) {
+        return self::has_arguments($_POST, $values);
+    }
+    static function has_get (...$values) {
+        return self::has_arguments($_GET, $values);
+    }
+
+
+
+
 
 
 

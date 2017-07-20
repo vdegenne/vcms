@@ -1,13 +1,12 @@
 <?php
 namespace vcms;
 
-require_once 'VcmsObject.class.php';
+use vcms\resources\ResourceConfig;
+
+require_once __DIR__ . "/resources/ResourceConfig.class.php";
 
 
-class ProjectConfig extends VcmsObject
+class ProjectConfig extends ResourceConfig
 {
     protected $name;
-
-    protected $database;
-    protected $needs_database;
 }

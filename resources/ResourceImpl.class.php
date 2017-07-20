@@ -183,10 +183,16 @@ abstract class ResourceImpl extends VcmsObject
         }
 
         if ($Configs !== null) {
-            Object::cast($Configs, $C);
+            $props = (new \ReflectionObject($C))->getProperties(\ReflectionProperty::IS_PROTECTED);
+            foreach ($props as $prop) {
+                if (@$Configs->{$prop->name} !== null && $C->{$prop->name} === null) {
+                    $C->{$prop->name} = $Configs->{$prop->name};
+                }
+            }
             $R->Config = $C;
         }
 
         return $R;
     }
+
 }

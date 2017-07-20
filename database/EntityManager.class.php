@@ -1,9 +1,11 @@
 <?php
 declare (strict_types = 1);
+namespace vcms\database;
 
+use vcms\VcmsObject;
+use Exception;
 
-namespace vdegenne;
-class DatabaseManagerv2
+class EntityManager extends VcmsObject
 {
     
     /** @var vdegenne\Database */
@@ -17,21 +19,20 @@ class DatabaseManagerv2
     protected $objectPublicProperties = [];
 
     
-    public function __construct (Database $Database, bool $evalObject = false)
+    function __construct (Database $Database, $evalObject = false)
     {
 
         if (static::TABLE == '') {
             throw new Exception ('the constant TABLE needs to be defined for the manager');
         }
 
-        if ($Database === null) {
-            throw new Exception ('the Database Object is null. Please provide a functional object.');
-        }
 
         $this->Database = $Database;
 
-        
-        if (static::OBJECT !== '' && $evalObject) {
+        if ($this::OBJECT !== '' && $evalObject) {
+            if ($this->Database === null) {
+                throw new Exception('a database must be provided in order to evaluate the object.');
+            }
             $this->eval_object();
         }
 
@@ -82,33 +83,36 @@ class DatabaseManagerv2
     }
 
 
-    public static function generate_Manager (String $name, String $TABLE, String $OBJECT) {
 
-        global $Database;
+
+    static function create_manager (Database $database,
+                                    string $managerName,
+                                    string $tablePath,
+                                    string $objectPath,
+                                    bool $evalObject = true) {
+
+        $definition = '';
         
-        $managerDef = '';
-        
-        if (($lastAntiSlash = strrpos($name, '\\')) > 0) {
-            $namespace = substr($name, 0, $lastAntiSlash);
-            $className = substr($name, $lastAntiSlash + 1);
+        if (($lastAntiSlash = strrpos($managerName, '\\')) > 0) {
+            $namespace = substr($managerName, 0, $lastAntiSlash);
+            $className = substr($managerName, $lastAntiSlash + 1);
             $namespace = trim($namespace, '\\');
-            $managerDef .= "namespace $namespace;\n";
+            $definition .= "namespace $namespace;\n";
         }
         else {
-            $className = $name;
+            $className = $managerName;
         }
 
-        $managerDef .=<<<EOT
+        $definition .= "use vcms\database\EntityManager;\n";
+        $definition .= "class {$className} extends EntityManager\n";
+        $definition .= "{\n";
+        $definition .= "    const TABLE = '{$tablePath}';\n";
+        $definition .= "    const OBJECT = '{$objectPath}';\n";
+        $definition .= "}\n";
 
-class $className extends \\vdegenne\DatabaseManagerv2
-{
-    const TABLE = '$TABLE';
-    const OBJECT = '$OBJECT';
-}
-EOT;
-        eval($managerDef);
+        eval($definition);
 
-        return new $name($Database, true);
+        return new $managerName($database, $evalObject);
     }
 
 
