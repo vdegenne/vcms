@@ -35,6 +35,7 @@ if (!$Resource->exists) {
 }
 
 /* prepare the database */
+\vcms\database\Credential::$search_in = [__DIR__, getcwd().'/../'];
 $Database = null;
 if ($Resource->Config->needs_database) {
     $Database = Database::get_from_handler($Resource->Config->database);

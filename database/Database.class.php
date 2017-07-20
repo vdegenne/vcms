@@ -9,14 +9,12 @@ use Exception;
 
 class Database extends PDO
 {
-
-    const CREDENTIALS_FILENAME = '.db_credentials';
     const DEFAULT_DRIVER = DatabaseDriver::POSTGRESQL;
 
 
     static function get_from_handler (string $handler)
     {
-        $Credentials = Credential::build_list_from_files('../' . self::CREDENTIALS_FILENAME);
+        $Credentials = Credential::build_list_from_files();
 
         $matchingCreds = array_filter($Credentials, function ($C) use ($handler) {
             if ($C->handler === $handler) return true;
