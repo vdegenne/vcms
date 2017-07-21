@@ -3,9 +3,9 @@ use vcms\Project;
 use vcms\Request;
 use vcms\Session;
 use vcms\User;
+use vcms\database\Credential;
 use vcms\database\Database;
 use vcms\utils\Authentication;
-use vcms\utils\Object;
 
 require_once "Project.class.php";
 
@@ -35,7 +35,7 @@ if (!$Resource->exists) {
 }
 
 /* prepare the database */
-\vcms\database\Credential::$search_in = [__DIR__, getcwd().'/../'];
+Credential::$search_in = [__DIR__, getcwd().'/../'];
 $Database = null;
 if ($Resource->Config->needs_database) {
     $Database = Database::get_from_handler($Resource->Config->database);
@@ -47,10 +47,17 @@ if ($Session->User === null) {
 }
 
 
-
+/* redirect if authentication is needed */
 if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated)
 {
-    header('Location: ' . $Resource->Config->authentication_uri);
+    $QueryString->add_arguments('continue',
+        sprintf('%s://%s%s',
+            $_SERVER['REQUEST_SCHEME'],
+            $_SERVER['HTTP_HOST'],
+            $_SERVER['REQUEST_URI'])
+    );
+
+    header('Location: ' . $Resource->Config->authentication_uri . '?' . $QueryString);
     exit();
 }
 if ($Resource->Config->is_auth_page)

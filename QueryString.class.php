@@ -25,11 +25,9 @@ class QueryString extends VcmsObject
 //    }
 
 
-    function add_arguments (array $args)
+    function add_arguments (string $argName, string $argValue)
     {
-        foreach ($args as $argKey => $argVal) {
-            $this->arguments[$argKey] = $argVal;
-        }
+        $this->arguments[$argName] = $argValue;
     }
 
 

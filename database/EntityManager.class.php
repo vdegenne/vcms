@@ -140,7 +140,7 @@ class EntityManager extends VcmsObject
 
 
     
-    public function get_statement (String $sql, $placeholders = [], int $fetchMode = \PDO::FETCH_CLASS) : \PDOStatement {
+    function get_statement (String $sql, $placeholders = [], int $fetchMode = \PDO::FETCH_CLASS) : \PDOStatement {
         
         try {
             

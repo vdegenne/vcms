@@ -144,7 +144,9 @@ class Request extends VcmsObject
     static function has_get (...$values) {
         return self::has_arguments($_GET, $values);
     }
-
+    static function has_put (...$values) {
+        return self::has_arguments($GLOBALS['_PUT'], $values);
+    }
 
 
 
