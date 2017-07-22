@@ -25,6 +25,7 @@ class Database extends PDO
             throw new \Exception('no matching credentials for the database.');
         }
 
+        $matchingCreds = array_values($matchingCreds);
         return new Database($matchingCreds[0]);
     }
 
