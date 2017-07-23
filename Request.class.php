@@ -1,11 +1,10 @@
 <?php
 namespace vcms;
 
-
-use vcms\resources\Resource;
-use vcms\resources\ResourceImpl;
-use vcms\resources\ResourceType;
-use vcms\resources\implementations\ResourceConfig;
+use vcms\resources\implementations\Resource;
+use vcms\resources\implementations\ResourceConfigFactory;
+use vcms\resources\implementations\ResourceFactory;
+use vcms\resources\implementations\ResourceType;
 use vcms\Response\Response;
 
 class Request extends VcmsObject
@@ -107,24 +106,10 @@ class Request extends VcmsObject
 
     function generate_resource ($Configs)
     {
-
-        /* get the configuration file of the resource */
-        $resourceConfigFilepath = sprintf('%s/%s/%s',
-            ResourceImpl::REPO_DIRPATH,
-            $this->requestURI,
-            ResourceImpl::RESOURCE_CONFIG_FILENAME
-        );
-
-        if (!file_exists($resourceConfigFilepath)) {
-            throw new \Exception('the configuration file was not found.');
-        }
-
-        $configJson = json_decode(file_get_contents($resourceConfigFilepath));
-
-        $Resource = ResourceImpl::getResource((new ResourceType())->{$configJson->type}, $Configs);
-        $Resource->Request = $this;
-
-        return $Resource;
+        /* get the config file */
+        $resourceDirpath = Resource::$REPO_DIRPATH . '/' . $this->requestURI;
+        ResourceConfigFactory::create_config_object($resourceDirpath);
+        return ResourceFactory::create_resource(ResourceType::TEST);
     }
 
 

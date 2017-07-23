@@ -1,26 +1,8 @@
 <?php
-namespace vcms\Response;
+namespace vcms;
 
 
-use vcms\Request;
-use vcms\resources\ResourceImpl;
-use vcms\VcmsObject;
-
-class Response extends VcmsObject
+class Response
 {
-    /**
-     * @var Request
-     */
-    protected $Request;
-    /**
-     * @var ResourceImpl
-     */
-    protected $Resource;
-
-
-    function send ()
-    {
-        header('Content-type: ' . $this->Resource->Config->mimetype);
-        echo $this->Resource->content;
-    }
+    public $mimetype = 'text/html'; /* default */
 }

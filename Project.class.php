@@ -18,9 +18,10 @@ class Project extends VcmsObject
      * @var Array
      */
     protected $include_dirpaths;
+
     /**
-     * @var String
      * Location of the project. It is set automatically in the bootstrap
+     * @var string
      */
     protected $location;
 
@@ -52,6 +53,18 @@ class Project extends VcmsObject
 
         $this->Config = Object::cast(json_decode(file_get_contents($configFilepath)), '\\vcms\\ProjectConfig');
     }
+
+    function __get ($name)
+    {
+        if (!array_key_exists($name, get_object_vars($this))) {
+            if (array_key_exists($name, get_object_vars($this->Config))) {
+                return $this->Config->{$name};
+            }
+        }
+        return parent::__get($name);
+    }
+
+
 
     function __set($name, $value)
     {

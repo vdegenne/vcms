@@ -6,7 +6,8 @@ use vcms\resources\ResourceConfig;
 require_once __DIR__ . "/resources/ResourceConfig.class.php";
 
 
-class ProjectConfig extends ResourceConfig
+class ProjectConfig
 {
     protected $name;
+    public $env;
 }

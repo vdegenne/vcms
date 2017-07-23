@@ -1,31 +1,25 @@
 <?php
-namespace vcms\resources;
+namespace vcms\resources\implementations;
 
 
-use vcms\resources\implementations\RESTResource; // temporary
 use vcms\Request;
-use vcms\resources\implementations\RESTResourceConfig;
-use vcms\resources\implementations\WebResource;
-use vcms\resources\implementations\WebResourceConfig;
 use vcms\VcmsObject;
 use vcms\utils\Object;
 use Exception;
 
-abstract class ResourceImpl extends VcmsObject
+
+class Resource extends VcmsObject
 {
 
     /**
      * The REPO is the location of all the registered resources.
      * You can manually create your resource from an object.
-     * Or you can persist and create one in the repo following the
+     * Or you can persist and create one in the repo.
      * Always see the dirpaths starting from the `www` directory.
      */
     const REPO_DIRPATH = '../resources';
 
-    /**
-     * without the extension.
-     */
-    const RESOURCE_CONTENT_FILENAME = 'content';
+    const RESOURCE_CONTENT_FILENAME = 'content'; /* without the extension */
 
     const RESOURCE_CONFIG_FILENAME = 'resource.json';
 
@@ -35,7 +29,7 @@ abstract class ResourceImpl extends VcmsObject
      * The type is analysed in the bootstrap.
      * @var ResourceType
      */
-    protected $type = ResourceType::WEB;
+    protected $type = ResourceType::WEB; /* default */
 
     /**
      * The request which invoked the Resource.

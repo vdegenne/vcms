@@ -1,13 +1,9 @@
 <?php
-namespace vcms\resources;
+namespace vcms\resources\implementations;
 
-use vcms\VcmsObject;
+use Exception;
 
-
-require_once __DIR__ . "/../VcmsObject.class.php";
-
-
-class ResourceConfig extends VcmsObject
+class ResourceConfig
 {
     protected $type;
 
@@ -21,4 +17,16 @@ class ResourceConfig extends VcmsObject
     protected $is_auth_page;
     protected $authentication_db;
     protected $authentication_table;
+
+
+    function check_required (array $required = [])
+    {
+        $required = array_merge($required, ['type']);
+
+        foreach ($required as $r) {
+            if (!isset($this->{$r})) {
+                throw new Exception("property \"$r\" missing from the configuration file.");
+            }
+        }
+    }
 }

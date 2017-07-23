@@ -1,22 +1,31 @@
 <?php
-namespace vcms\resources;
+namespace vcms\resources\implementations;
 
 class ResourceType
 {
-    const WEB = 0;
-    const REST = 1;
+    const PLAIN = 0;
+    const WEB = 1;
+    const REST = 2;
 
-    function __get($name)
+    const TEST = 10; /* temporary */
+
+    static function from_string (string $type): int
     {
-        switch (strtolower($name)) {
-            case 'web':
+        switch ($type) {
+            case 'PLAIN':
+                return self::PLAIN;
+                break;
+            case 'WEB':
                 return self::WEB;
                 break;
-            case 'rest':
+            case 'REST':
                 return self::REST;
                 break;
+
+            case 'TEST':
+                return self::TEST;
+                break;
+
         }
     }
-
-
 }

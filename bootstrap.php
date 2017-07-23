@@ -19,6 +19,12 @@ $Project->location = dirname(getcwd());
 $Project->add_include_dirpaths(__DIR__);
 $Project->add_include_dirpaths($Project->location . '/' . Project::INCLUDES_DIRNAME);
 
+
+if ($Project->env == 'dev') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL | E_STRICT);
+}
+
 /* register the autoloader */
 require_once '__autoloader.inc.php';
 
@@ -27,8 +33,11 @@ require_once '__autoloader.inc.php';
 $Request = Request::get();
 $QueryString = $Request->QueryString;
 
-
 $Resource = $Request->generate_resource($Project->Config);
+
+echo 'end';
+exit;
+
 if (!$Resource->exists) {
     $Request->requestURI = '404';
     $Resource = $Request->generate_resource($Project->Config);
@@ -100,10 +109,7 @@ if ($Resource->Config->is_auth_page)
 //}
 //
 //
-//if ($_ENV == 'dev') {
-//    ini_set('display_errors', 1);
-//    error_reporting(E_ALL | E_STRICT);
-//}
+
 //// ini_set('display_startup_errors', 1);
 //
 ///**
