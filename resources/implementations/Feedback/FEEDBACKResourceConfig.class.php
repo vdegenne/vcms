@@ -2,7 +2,7 @@
 namespace vcms\resources\implementations;
 
 
-class RESTResourceConfig extends ResourceConfig
+class FEEDBACKResourceConfig extends ResourceConfig
 {
     public $mimetype = 'application/json';
 }

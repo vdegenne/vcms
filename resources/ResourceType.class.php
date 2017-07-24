@@ -12,6 +12,7 @@ class ResourceType
     static function from_string (string $type): int
     {
         switch ($type) {
+            case '':
             case 'PLAIN':
                 return self::PLAIN;
                 break;

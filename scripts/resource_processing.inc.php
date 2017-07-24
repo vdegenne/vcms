@@ -1,5 +1,5 @@
 <?php
-use vcms\resources\ResourceType;
+use vcms\resources\implementations\ResourceType;
 
 
 

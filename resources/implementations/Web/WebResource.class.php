@@ -1,47 +1,36 @@
 <?php
 namespace vcms\resources\implementations;
 
-use vcms\Request;
-use vcms\resources\ResourceImpl;
-use vcms\resources\ResourceType;
 
-
-class WebResource extends ResourceImpl
+class WEBResource extends Resource
 {
-    const LAYOUT_DIRPATH = '../layouts';
     const HEAD_FILENAME = 'head.php';
+    const BODY_FILENAME = 'body.php';
 
-    protected $type = ResourceType::WEB;
+    /**
+     * @var WEBResourceConfig
+     */
+    public $Config;
 
-    protected $metadatas;
+    function process_response (string $processorFilepath = null, ...$globals) {
 
-    protected $structureFilepath = '../layouts/structure.php';
+        foreach ($GLOBALS as $globalname => $globalvalue) {
+            global $$globalname;
+        }
 
-    protected $headFilepath;
+        parent::process_response();
 
-    function __construct (Request $Request = null)
-    {
+        $title = $this->metadatas->title;
+        $description = @$this->metadatas->description;
+        $keywords = @$this->metadatas->keywords;
 
-    }
+        $head = $this->dirpath . '/' . self::HEAD_FILENAME;
+        $body = $this->dirpath . '/' . self::BODY_FILENAME;
 
-    function update () {
-        parent::__update();
-    }
-
-    function load_configuration () {
-        parent::__load_configuration();
-
-        $this->metadatas = $this->Config->metadatas;
-    }
-
-    function resolve_content (string $contentFilename = null) {
-        parent::__resolve_content($contentFilename);
-
-        $this->headFilepath = sprintf('%s/%s/%s',
-            $this::REPO_DIRPATH,
-            $this->Request->requestURI,
-            $this::HEAD_FILENAME
-        );
+        ob_start();
+        include 'layouts/structure.php';
+        $this->Response->content = ob_get_contents();
+        ob_end_clean();
     }
 
 }

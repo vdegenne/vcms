@@ -33,11 +33,11 @@ class Authentication extends VcmsObject
 
     static function create_from_handler (string $db_handler, string $usersTable)
     {
-        $A = new Authentication(Database::get_from_handler($db_handler));
-        $A->usersTable = $usersTable;
+        $A=new Authentication(Database::get_from_handler($db_handler));
+        $A->usersTable=$usersTable;
 
         /* create the users entity manager */
-        $A->usersManager = EntityManager::create_manager(
+        $A->usersManager=EntityManager::create_manager(
             $A->Database,
             'vcms\UsersManager',
             $A->usersTable,
@@ -50,19 +50,19 @@ class Authentication extends VcmsObject
 
     function __construct (Database $Database)
     {
-        $this->Database = $Database;
+        $this->Database=$Database;
     }
 
 
     function verify ($username, $password): bool
     {
-        $sql = "
-                select * from {$this->usersTable}
-                where username=:username;
-        ";
+        $sql=<<<SQL
+select * from {$this->usersTable}
+where email=:email;
+SQL;
 
         /** @var \PDOStatement $s */
-        $s = $this->usersManager->get_statement($sql, ['username' => $username]);
+        $s = $this->usersManager->get_statement($sql, ['email' => $username]);
 
         if ($s->rowCount() === 0) return false;
 

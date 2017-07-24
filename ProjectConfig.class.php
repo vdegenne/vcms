@@ -1,13 +1,20 @@
 <?php
 namespace vcms;
 
-use vcms\resources\ResourceConfig;
 
-require_once __DIR__ . "/resources/ResourceConfig.class.php";
+require __DIR__ . '/Config.class.php';
 
-
-class ProjectConfig
+class ProjectConfig extends Config
 {
-    protected $name;
+    const CONFIGURATION_FILENAME = 'project.json';
+
+
+    public $name;
     public $env;
+
+    function check_required (array $required = [])
+    {
+        $required = array_merge($required, ['name', 'env']);
+        parent::check_required($required);
+    }
 }

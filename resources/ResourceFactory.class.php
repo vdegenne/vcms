@@ -6,19 +6,14 @@ use Exception;
 class ResourceFactory
 {
 
-    static function create_resource (int $type): Resource
+    static function create_resource_from_repo (string $dirpath): Resource
     {
-        switch ($type) {
-            case ResourceType::PLAIN:
-                return new Resource();
-                break;
+        $Config=ResourceConfigFactory::create_config_object($dirpath);
 
-            case ResourceType::TEST:
-                return new TestResource();
-                break;
-            default:
-                throw new Exception('invalid resource type.');
-        }
+        $classname = __NAMESPACE__ . '\\' . $Config->stringType . 'Resource';
+        $Resource = new $classname($dirpath, $Config);
+
+        return $Resource;
     }
 
 }

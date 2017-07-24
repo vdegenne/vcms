@@ -1,6 +1,9 @@
 <?php
 use vcms\Project;
 use vcms\Request;
+use vcms\resources\implementations\ResourceConfigFactory;
+use vcms\resources\implementations\FEEDBACKResource;
+
 use vcms\Session;
 use vcms\User;
 use vcms\database\Credential;
@@ -9,56 +12,63 @@ use vcms\utils\Authentication;
 
 require_once "Project.class.php";
 
-$Project = new Project();
+$Project=new Project();
 /*
  * The include dirpaths are used for the autoloader.
  * The autoloader will automatically search for the classes
  * to include from these directories (recursively)
  */
-$Project->location = dirname(getcwd());
+$Project->location=dirname(getcwd());
+chdir($Project->location);
 $Project->add_include_dirpaths(__DIR__);
 $Project->add_include_dirpaths($Project->location . '/' . Project::INCLUDES_DIRNAME);
-
 
 if ($Project->env == 'dev') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL | E_STRICT);
 }
 
+
 /* register the autoloader */
 require_once '__autoloader.inc.php';
+/* autoloader */
 
 
 /* the http request object with some useful properties */
-$Request = Request::get();
-$QueryString = $Request->QueryString;
+$Request=Request::get();
+$QueryString=$Request->QueryString;
 
-$Resource = $Request->generate_resource($Project->Config);
+/** @var \vcms\resources\implementations\Resource $Resource */
+$Resource=$Request->generate_resource();
+$Resource->Config->fill_the_blanks(
+    ResourceConfigFactory::create_config_object('resources/resources.json'));
 
-echo 'end';
-exit;
+/**
+ * This Object is used to send a
+ * json back to the front-end.
+ * It can be sent before the main
+ * $Resource resource.
+ * @var FEEDBACKResource $Feedback
+ */
+$Feedback = new FEEDBACKResource();
 
-if (!$Resource->exists) {
-    $Request->requestURI = '404';
-    $Resource = $Request->generate_resource($Project->Config);
-}
+
 
 /* prepare the database */
-Credential::$search_in = [__DIR__, getcwd().'/../'];
-$Database = null;
+Credential::$search_in=[__DIR__, $Project->location];
+$Database=null;
 if ($Resource->Config->needs_database) {
-    $Database = Database::get_from_handler($Resource->Config->database);
+    $Database=Database::get_from_handler($Resource->Config->database);
 }
 
-$Session = Session::open();
+$Session=Session::open();
 if ($Session->User === null) {
-    $Session->User = new User();
+    $Session->User=new User();
 }
 
 
 /* redirect if authentication is needed */
-if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated)
-{
+if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated) {
     $QueryString->add_arguments('continue',
         sprintf('%s://%s%s',
             $_SERVER['REQUEST_SCHEME'],
@@ -69,18 +79,17 @@ if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated)
     header('Location: ' . $Resource->Config->authentication_uri . '?' . $QueryString);
     exit();
 }
-if ($Resource->Config->is_auth_page)
-{
-    $Authentication = null;
+if ($Resource->Config->is_auth_page) {
+    $Authentication=null;
 
     /* if no Database, we create for the authentication */
     if ($Resource->Config->authentication_db !== null) {
-        $Authentication = Authentication::create_from_handler(
+        $Authentication=Authentication::create_from_handler(
             $Resource->Config->authentication_db,
             $Resource->Config->authentication_table
         );
     } else if ($Resource->Config->database !== null) {
-        $Authentication = Authentication::create_from_handler(
+        $Authentication=Authentication::create_from_handler(
             $Resource->Config->database,
             $Resource->Config->authentication_table
         );
@@ -88,8 +97,6 @@ if ($Resource->Config->is_auth_page)
         throw new Exception('no database were specified for the authentication.');
     }
 }
-
-
 
 
 /**
@@ -145,9 +152,6 @@ if ($Resource->Config->is_auth_page)
 //    }
 //
 //});
-
-
-
 
 
 /**
@@ -256,10 +260,7 @@ if ($Resource->Config->is_auth_page)
 //    return call_user_func_array([$Request, 'mkurl'], func_get_args());
 //}
 
-require_once "scripts/resource_processing.inc.php";
-
-
-$Response = $Request->prepare_response();
-$Response->Resource = $Resource;
-
-$Response->send();
+$Resource->send();
+/**
+ * what comes after won't be processed.
+ */

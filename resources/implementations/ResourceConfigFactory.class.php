@@ -1,23 +1,26 @@
 <?php
 namespace vcms\resources\implementations;
 
+use vcms\resources\ResourceException;
 use vcms\utils\Object;
 use Exception;
 
 class ResourceConfigFactory
 {
-    static function create_config_object (string $resourceDirpath): ResourceConfig
+    static function create_config_object (string $configPath): ResourceConfig
     {
-        $configFilepath = $resourceDirpath . '/' . Resource::RESOURCE_CONFIG_FILENAME;
-
-        if (!file_exists($configFilepath)) {
-            throw new Exception('no configuration file was found');
+        if (!is_file($configPath)) {
+            $configPath=$configPath . '/' . Resource::RESOURCE_CONFIG_FILENAME;
         }
 
-        $ConfigStdClass = json_decode(file_get_contents($configFilepath));
+        if (!file_exists($configPath)) {
+            throw new ResourceException('no configuration file was found', 2);
+        }
+
+        $ConfigStdClass = json_decode(file_get_contents($configPath));
 
         if (!isset($ConfigStdClass->type)) {
-            throw new Exception('missing type in the configuration file');
+            $ConfigStdClass->type = '';
         }
 
          $ConfigStdClass->type = strtoupper($ConfigStdClass->type);
@@ -40,6 +43,7 @@ class ResourceConfigFactory
 
         /* check if required attributes are in the configuration file */
         $Config->check_required();
+        $Config->process_attributes();
 
         return $Config;
     }

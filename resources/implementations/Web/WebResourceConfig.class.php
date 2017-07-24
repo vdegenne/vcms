@@ -1,10 +1,18 @@
 <?php
 namespace vcms\resources\implementations;
 
-use vcms\resources\ResourceConfig;
 
-class WebResourceConfig extends ResourceConfig
+class WEBResourceConfig extends ResourceConfig
 {
-    protected $mimetype = 'text/html';
-    protected $metadatas;
+    public $mimetype = 'text/html';
+    public $metadatas;
+
+
+    function check_required (array $required=[])
+    {
+        $required=array_merge($required, ['metadatas']);
+        parent::check_required($required);
+    }
+
+
 }

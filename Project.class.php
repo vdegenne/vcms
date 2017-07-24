@@ -11,7 +11,6 @@ require_once 'Object.class.php';
 class Project extends VcmsObject
 {
     const INCLUDES_DIRNAME = 'includes';
-    const CONFIGURATION_FILENAME = 'project.json';
 
 
     /**
@@ -46,7 +45,7 @@ class Project extends VcmsObject
 
     private function update ()
     {
-        $configFilepath = $this->location . '/' . self::CONFIGURATION_FILENAME;
+        $configFilepath = $this->location . '/' . ProjectConfig::CONFIGURATION_FILENAME;
         if (!file_exists($configFilepath)) {
             throw new \Exception('configuration file not found.');
         }
