@@ -8,7 +8,7 @@ class User extends VcmsObject
 {
     protected $user_id;
 
-    protected $username;
+    protected $email;
     protected $password;
 
     protected $isAuthenticated;

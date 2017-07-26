@@ -124,7 +124,10 @@ class Request extends VcmsObject
 //                /* 404 page not found fall back */
 //            }
 //            else {
-                throw new Exception($e->getMessage(), $e->getCode(), $e->getPrevious());
+            if ($e->getCode() === ResourceException::MISSING_ARGUMENTS) {
+                throw new Exception($e->getMessage() . '(from ' . $resourceDirpath . ')');
+            }
+            throw new Exception($e->getMessage(), $e->getCode(), $e->getPrevious());
 //            }
         }
 
