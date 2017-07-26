@@ -54,15 +54,17 @@ class QueryString extends VcmsObject
         return ($paramsCount == count($params));
     }
 
-
-
-    function get($key)
+    function __isset ($name)
     {
-        if ($this->has($key)) {
-            return $this->arguments[$key];
-        } else
-            return false;
+        if (!array_key_exists($name, array_keys(get_object_vars($this)))) {
+            return $this->has($name);
+        }
+        return isset($name);
     }
+
+
+
+
 
 
 
@@ -71,7 +73,6 @@ class QueryString extends VcmsObject
         if ($this->has($name)) {
             return $this->arguments[$name];
         }
-        // else
         return parent::__get($name);
     }
 

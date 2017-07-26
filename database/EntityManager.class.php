@@ -73,9 +73,9 @@ class EntityManager extends VcmsObject
 
         $classDef .= "class $className {\n";
 
-        /* foreach ($properties as $property) { */
-        /*     $classDef .= "var \$$property;\n"; */
-        /* } */
+        foreach ($properties as $property) {
+            $classDef .= "var \$$property;\n";
+        }
 
         $classDef .= '}';
         

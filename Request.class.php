@@ -68,7 +68,9 @@ class Request extends VcmsObject
 
     private function __construct ()
     {
-        $this->requestURI=trim($_SERVER['REDIRECT_URL'], '/');
+        if (isset($_SERVER['REDIRECT_URL'])) {
+            $this->requestURI=trim($_SERVER['REDIRECT_URL'], '/');
+        }
         $this->method=$_SERVER['REQUEST_METHOD'];
 
         // $this->Domain = $Domain;
@@ -118,12 +120,12 @@ class Request extends VcmsObject
             $Resource=ResourceFactory::create_resource_from_repo($resourceDirpath);
         }
         catch (ResourceException $e) {
-            if ($e->getCode() === ResourceException::RESOURCE_NOT_FOUND) {
-                /* 404 page not found fall back */
-            }
-            else {
+//            if ($e->getCode() === ResourceException::RESOURCE_NOT_FOUND) {
+//                /* 404 page not found fall back */
+//            }
+//            else {
                 throw new Exception($e->getMessage(), $e->getCode(), $e->getPrevious());
-            }
+//            }
         }
 
         if (array_reverse(explode('\\', get_class($Resource)))[0] === 'RESTResource') {
