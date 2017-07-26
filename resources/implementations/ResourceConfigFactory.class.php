@@ -9,12 +9,12 @@ class ResourceConfigFactory
 {
     static function create_config_object (string $configPath): ResourceConfig
     {
-        if (!is_file($configPath)) {
+        if (!isset(pathinfo($configPath)['extension'])) {
             $configPath=$configPath . '/' . Resource::RESOURCE_CONFIG_FILENAME;
         }
 
         if (!file_exists($configPath)) {
-            throw new ResourceException('no configuration file was found', 2);
+            throw new ResourceException("$configPath configuration file not found", 2);
         }
 
         $ConfigStdClass = json_decode(file_get_contents($configPath));
