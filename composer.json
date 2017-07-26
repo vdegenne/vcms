@@ -1,0 +1,15 @@
+{
+    "name": "vdegenne/vcms",
+    "type": "framework",
+    "description": "use the power.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Valentin Degenne",
+            "email": "vdegenne@gmail.com"
+        }
+    ],
+    "require": {
+	"php": ">=7.0.0"
+    }
+}
