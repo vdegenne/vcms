@@ -1,5 +1,5 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
 
 class TESTResourceConfig extends ResourceConfig

@@ -1,8 +1,8 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
 
-class WEBResourceConfig extends ResourceConfig
+class WebResourceConfig extends VResourceConfig
 {
     public $mimetype = 'text/html';
     public $metadatas;

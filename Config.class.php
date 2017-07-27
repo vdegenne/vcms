@@ -16,6 +16,14 @@ class Config
         }
     }
 
+    function replace_not_nulls (Config $Config)
+    {
+        foreach (get_object_vars($this) as $attname => $attvalue) {
+            if ($this->{$attname} !== null && isset($Config->{$attname})) {
+                $this->{$attname} = $Config->{$attname};
+            }
+        }
+    }
 
     function process_attributes () {}
 

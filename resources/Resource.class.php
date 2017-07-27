@@ -1,18 +1,16 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
 use vcms\Response;
 use vcms\Request;
 use vcms\VcmsObject;
 use Exception;
+use vcms\VObject;
 
-class Resource extends VcmsObject
+class Resource extends VObject
+    implements \JsonSerializable
 {
-    const REPO_DIRPATH = 'resources';
-    public static $REPO_DIRPATH = 'resources';
 
-
-    const RESOURCE_CONFIG_FILENAME = 'resource.json';
 
     /**
      * Location of the resource on disk.
@@ -24,7 +22,7 @@ class Resource extends VcmsObject
      * The filename of the content to process for the Response.
      * @var string
      */
-    public $contentFilename;
+    // public $contentFilename;
 
     /**
      * The configuration Object of the Resource.
@@ -38,7 +36,7 @@ class Resource extends VcmsObject
     public $Response;
 
 
-    function __construct (string $dirpath = null, ResourceConfig $Config = null)
+    function __construct (string $dirpath = null, $Config = null)
     {
         if ($dirpath !== null) {
             $this->dirpath = $dirpath;
@@ -63,6 +61,14 @@ class Resource extends VcmsObject
         $this->Config=ResourceConfigFactory::create_config_object($this->dirpath);
     }
 
+
+    function dump_json () {
+        //$this->process_response();
+        $this->Response->content = json_encode($this, JSON_PRETTY_PRINT);
+        $this->Response->mimetype = 'application/json';
+        $this->Response->send();
+    }
+
     function send ()
     {
         $this->process_response();
@@ -71,21 +77,7 @@ class Resource extends VcmsObject
 
     function process_response ()
     {
-        global $Request, $Feedback;
-
         $this->Response->mimetype = $this->mimetype;
-
-
-        if ($this->Config->get_params !== null) {
-            if (!$Request::has_get($this->Config->get_params)) {
-                $Feedback->failure('needs arguments');
-            };
-        }
-        if ($this->Config->post_params !== null) {
-            if (!$Request::has_post($this->Config->post_params)) {
-                $Feedback->failure('needs arguments.');
-            }
-        }
     }
 
 
@@ -113,6 +105,8 @@ class Resource extends VcmsObject
         }
     }
 
-
-
+    function jsonSerialize ()
+    {
+        return get_object_vars($this);
+    }
 }

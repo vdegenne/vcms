@@ -4,8 +4,9 @@ namespace vcms\database;
 
 use vcms\VcmsObject;
 use Exception;
+use vcms\VObject;
 
-class EntityManager extends VcmsObject
+class EntityManager extends VObject
 {
     
     /** @var vdegenne\Database */

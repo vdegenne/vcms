@@ -50,7 +50,7 @@ class Database extends PDO
 
 
         try {
-            parent::__construct($dsn, $Credential->user, $Credential->password);
+            parent::__construct($dsn, $Credential->user, $Credential->get_password());
             $this->setAttribute(parent::ATTR_ERRMODE, parent::ERRMODE_EXCEPTION);
 
         } catch (PDOException $e) {

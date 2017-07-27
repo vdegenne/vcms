@@ -1,3 +1,5 @@
+<img src="img/hero.png"/>
+
 # vcms
 
 vcms is a personal php & apache CMS (the v is for my first name : valentin).

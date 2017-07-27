@@ -5,8 +5,9 @@ use vcms\database\Database;
 use vcms\User;
 use vcms\VcmsObject;
 use vcms\database\EntityManager;
+use vcms\VObject;
 
-class Authentication extends VcmsObject
+class Authentication extends VObject
 {
     /**
      * The Database Object used for the authentication.

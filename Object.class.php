@@ -40,7 +40,7 @@ class Object
                 $propDest->setAccessible(true);
                 $propDest->setValue($destination, $value);
             } else {
-                $destination->$name = $value;
+                //$destination->$name = $value;
             }
         }
         return $destination;

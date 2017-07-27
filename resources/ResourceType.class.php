@@ -1,5 +1,5 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
 class ResourceType
 {
@@ -7,26 +7,24 @@ class ResourceType
     const WEB = 1;
     const REST = 2;
 
-    const TEST = 10; /* temporary */
+    /* inherited resource types */
+    const V = 10;
 
     static function from_string (string $type): int
     {
         switch ($type) {
             case '':
-            case 'PLAIN':
+            case 'plain':
                 return self::PLAIN;
-                break;
-            case 'WEB':
+
+            case 'web':
                 return self::WEB;
-                break;
-            case 'REST':
+
+            case 'rest':
                 return self::REST;
-                break;
 
-            case 'TEST':
-                return self::TEST;
-                break;
-
+            case 'v':
+                return self::V;
         }
     }
 }

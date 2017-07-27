@@ -3,17 +3,18 @@ namespace vcms\database;
 
 
 use vcms\VcmsObject;
+use vcms\VObject;
 
-class Credential extends VcmsObject
+class Credential extends VObject
 {
     const CREDENTIALS_FILENAME = '.db_credentials';
 
     protected $raw;
-    protected $handler;
-    protected $driver;
-    protected $ip;
-    protected $databaseName;
-    protected $user;
+    public $handler;
+    public $driver;
+    public $ip;
+    public $databaseName;
+    public $user;
     protected $password;
 
     static $search_in = [];
@@ -50,5 +51,9 @@ class Credential extends VcmsObject
 
             return $Credentials;
         }
+    }
+
+    function get_password () {
+        return $this->password;
     }
 }

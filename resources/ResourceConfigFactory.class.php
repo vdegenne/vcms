@@ -1,16 +1,22 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
-use vcms\resources\ResourceException;
+
 use vcms\utils\Object;
-use Exception;
+
 
 class ResourceConfigFactory
 {
-    static function create_config_object (string $configPath): ResourceConfig
+    /**
+     * @param string $configPath
+     * @return Config
+     * @throws ResourceException
+     * @throws \Exception
+     */
+    static function create_config_object (string $configPath, string $resourceType = null)
     {
         if (!isset(pathinfo($configPath)['extension'])) {
-            $configPath=$configPath . '/' . Resource::RESOURCE_CONFIG_FILENAME;
+            $configPath=$configPath . '/' . ResourceConfig::RESOURCE_CONFIG_FILENAME;
         }
 
         if (!file_exists($configPath)) {
@@ -19,13 +25,20 @@ class ResourceConfigFactory
 
         $ConfigStdClass = json_decode(file_get_contents($configPath));
 
+
+        if ($resourceType !== null) {
+            $ConfigStdClass->type = $resourceType;
+        }
         if (!isset($ConfigStdClass->type)) {
             $ConfigStdClass->type = '';
         }
 
-         $ConfigStdClass->type = strtoupper($ConfigStdClass->type);
 
         try {
+            if (!empty($ConfigStdClass->type)) {
+                $ConfigStdClass->type = strtolower($ConfigStdClass->type);
+                $ConfigStdClass->type[0] = strtoupper($ConfigStdClass->type[0]);
+            }
             $classname = __NAMESPACE__ . '\\' . $ConfigStdClass->type . 'ResourceConfig';
             $Config = new $classname();
 
@@ -36,7 +49,7 @@ class ResourceConfigFactory
              */
         }
         catch (Exception $e) {
-            throw new Exception('this type of resource is not implemented');
+            throw new \Exception('this type of resource is not implemented');
         }
 
         Object::cast($ConfigStdClass, $Config);

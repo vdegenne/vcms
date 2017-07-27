@@ -14,17 +14,17 @@
  * expanded.
  */
 
-
+use vcms\FileSystem;
+require_once __DIR__ . "/FileSystem.class.php";
 
 function search_class ($className, $path)
 {
-    require_once 'FileSystem.class.php';
 
     if (file_exists("$path/$className.class.php")) {
         include_once "$path/$className.class.php";
     }
 
-    $directories = vcms\FileSystem::get_directories($path);
+    $directories = FileSystem::get_directories($path);
 
     foreach ($directories as $directory) {
         search_class($className, "$path/$directory");

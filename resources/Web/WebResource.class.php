@@ -1,14 +1,16 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
 
-class WEBResource extends Resource
+use vcms\resources\Resource;
+
+class WebResource extends Resource
 {
     const HEAD_FILENAME = 'head.php';
     const BODY_FILENAME = 'body.php';
 
     /**
-     * @var WEBResourceConfig
+     * @var class
      */
     public $Config;
 

@@ -1,40 +1,47 @@
 <?php
-namespace vdegenne;
-
-use ReflectionObject;
-use ReflectionProperty;
-use Exception;
+namespace vcms;
 
 
-class VObject {
+class VObject
+{
 
-  protected $readonlyProperties;
+    protected $readonlys = [];
 
-  public function __construct () {
-
-    $this->readonlyProperties = array_map(function ($p) {
-      return $p->name;
-    }, (new ReflectionObject($this))->getProperties(
-      ReflectionProperty::IS_PROTECTED));
-
-  }
-
-
-  function __get ($k) {
-    if (array_search($k, $this->readonlyProperties) !== false) {
-      throw new Exception('trying to modify a readonly property');
+    function __construct ()
+    {
+        $this->readonlys = array_map(
+            function ($p) { return $p->name; },
+            (new \ReflectionObject($this))
+                ->getProperties(\ReflectionProperty::IS_PROTECTED)
+        );
     }
-  }
 
-  function __set ($k, $v) {
-
-    $readonlyProperties = array_map(function ($p) {
-      return $p->name;
-    }, (new ReflectionObject($this))->getProperties(
-      ReflectionProperty::IS_PROTECTED));
-
-    if (array_search($k, $readonlyProperties) !== false) {
-      throw new Exception('can\'t modify a readonly property');
+    function __get ($name)
+    {
+        if (array_search($name, $this->readonlys) !== false) {
+            throw new \Exception('trying to modify a readonly property');
+        }
+        return $this->$name;
     }
-  }
+
+    function __set ($name, $value)
+    {
+        if (array_key_exists($name, get_object_vars($this)) !== false) {
+            $this->$name = $value;
+        }
+    }
+
+
+    function get_last_child_publics (): array {
+        $publics = [];
+
+        $classInfo = new \ReflectionClass($this);
+        foreach ($classInfo->getProperties() as $prop) {
+            if ($prop->isPublic() && $prop->getDeclaringClass()->name === $classInfo->name) {
+                $publics[$prop->name] = $this->{$prop->name};
+            }
+        }
+
+        return $publics;
+    }
 }

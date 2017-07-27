@@ -2,12 +2,12 @@
 namespace vcms;
 
 
-class Session extends VcmsObject
+class Session extends VObject
 {
     /**
      * @var User
      */
-    protected $User;
+    public $User;
 
 
     static function open (): Session
