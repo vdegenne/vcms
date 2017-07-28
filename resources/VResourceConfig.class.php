@@ -44,7 +44,9 @@ class VResourceConfig extends Config
     function process_attributes () {
 
         /* intervert type attributes */
-        $this->stringType = strtolower($this->type);
+        $stringType = strtolower($this->type);
+        $stringType[0] = strtoupper($stringType[0]);
+        $this->stringType = $stringType;
         $this->type = ResourceType::from_string($this->stringType);
     }
 }
