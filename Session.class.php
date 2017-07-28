@@ -7,7 +7,7 @@ class Session extends VObject
     /**
      * @var User
      */
-    public $User;
+    protected $User;
 
 
     static function open (): Session
@@ -28,12 +28,15 @@ class Session extends VObject
 
     function __set ($name, $value)
     {
-        parent::__set($name, $value);
-
-        if (array_key_exists($name, get_class_vars(Session::class)) !== false) {
+        if (array_key_exists($name, get_object_vars($this))) {
+            $this->{$name} = $value;
             $_SESSION[$name] = $this->{$name};
         }
     }
 
 
+    function __get ($name)
+    {
+        return $this->{$name};
+    }
 }

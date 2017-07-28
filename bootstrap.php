@@ -38,7 +38,10 @@ $Resource->Config->fill_the_blanks(
 $Feedback = new FeedbackResource();
 
 /* prepare the database */
-Credential::$search_in = [__DIR__, $Project->location];
+Credential::$search_in = [__DIR__, PROJECT_LOCATION];
+if ($Project->credentials_file !== null) {
+    Credential::$search_in[] = $Project->credentials_file;
+}
 $Database = null;
 if ($Resource->Config->needs_database) {
     $Database = Database::get_from_handler($Resource->Config->database);

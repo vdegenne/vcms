@@ -67,12 +67,13 @@ SQL;
 
         if ($s->rowCount() === 0) return false;
 
+        /** @var User $User */
         $User = $s->fetch();
         $User->isAuthenticated = false;
 
-        if (password_verify($password, $User->password)) {
+        if (password_verify($password, $User->get_password())) {
             $this->User = $User;
-            $this->User->password = '';
+            $this->User->set_password('');
             $this->User->isAuthenticated = true;
             return true;
         }

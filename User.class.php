@@ -13,8 +13,14 @@ class User extends VObject
 
     public $isAuthenticated;
 
+
+    function get_password () {
+        return $this->password;
+    }
+    function set_password (string $password) {
+        $this->password = $password;
+    }
     function jsonSerialize () {
         return get_object_vars($this);
     }
-
 }

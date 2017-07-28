@@ -12,6 +12,8 @@ class ProjectConfig extends Config
     public $name;
     public $env;
 
+    public $credentials_file;
+
     function check_required (array $required = [])
     {
         $required = array_merge($required, ['name', 'env']);

@@ -84,9 +84,12 @@ class RestResource extends VResource
         $globRestConfigFilename = "$globfilename.json";
         $restConfigFilenames = glob($globRestConfigFilename);
         if (count($restConfigFilenames) < 1) {
-            throw new \Exception('the configuration file for this REST method doesn\'t exist');
+            /* not raising an Exception because it's not necessary to have a
+               configuration file for the method */
+            // throw new \Exception('the configuration file for this REST method doesn\'t exist');
+        } else {
+            $this->restConfigFilename = $restConfigFilenames[0];
         }
-        $this->restConfigFilename = $restConfigFilenames[0];
         chdir(PROJECT_LOCATION);
     }
 }

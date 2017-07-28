@@ -5,7 +5,7 @@ namespace vcms;
 class VObject
 {
 
-    protected $readonlys = [];
+    private $readonlys = [];
 
     function __construct ()
     {
@@ -19,16 +19,19 @@ class VObject
     function __get ($name)
     {
         if (array_search($name, $this->readonlys) !== false) {
-            throw new \Exception('trying to modify a readonly property');
+            throw new \Exception('trying to get a readonly property');
         }
         return $this->$name;
     }
 
     function __set ($name, $value)
     {
-        if (array_key_exists($name, get_object_vars($this)) !== false) {
-            $this->$name = $value;
+        if (array_search($name, $this->readonlys) !== false) {
+            throw new \Exception('trying to modify a readonly property');
         }
+
+        $this->$name = $value;
+
     }
 
 
