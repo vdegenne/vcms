@@ -14,16 +14,16 @@ class ResourceType
     {
         switch ($type) {
             case '':
-            case 'plain':
+            case 'Plain':
                 return self::PLAIN;
 
-            case 'web':
+            case 'Web':
                 return self::WEB;
 
-            case 'rest':
+            case 'Rest':
                 return self::REST;
 
-            case 'v':
+            case 'V':
                 return self::V;
         }
     }
