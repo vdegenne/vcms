@@ -6,11 +6,10 @@ use vcms\Config;
 
 class ResourceConfig extends Config
 {
-    const RESOURCE_CONFIG_FILENAME = 'resource.json';
 
     /**
-     * the mimetype of the resource.
+     * The mimetype of the resource.
      * @var string
      */
-    public $mimetype;
+    public $mimetype = 'text/plain';
 }

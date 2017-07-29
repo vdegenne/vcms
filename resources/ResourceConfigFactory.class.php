@@ -7,6 +7,8 @@ use vcms\utils\Object;
 
 class ResourceConfigFactory
 {
+    const RESOURCE_CONFIG_FILENAME = 'resource.json';
+
     /**
      * @param string $configPath
      * @return Config
@@ -16,7 +18,7 @@ class ResourceConfigFactory
     static function create_config_object (string $configPath, string $resourceType = null)
     {
         if (!isset(pathinfo($configPath)['extension'])) {
-            $configPath=$configPath . '/' . ResourceConfig::RESOURCE_CONFIG_FILENAME;
+            $configPath=$configPath . '/' . self::RESOURCE_CONFIG_FILENAME;
         }
 
         if (!file_exists($configPath)) {

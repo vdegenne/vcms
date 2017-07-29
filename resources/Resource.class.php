@@ -1,13 +1,14 @@
 <?php
 namespace vcms\resources;
 
+use vcms\ConfigurableObject;
 use vcms\Response;
 use vcms\Request;
 use vcms\VcmsObject;
 use Exception;
 use vcms\VObject;
 
-class Resource extends VObject
+class Resource extends ConfigurableObject
     implements \JsonSerializable
 {
 
@@ -81,29 +82,29 @@ class Resource extends VObject
     }
 
 
-    function __get ($name)
-    {
-        if (!array_key_exists($name, get_object_vars($this))) {
-            if (array_key_exists($name, get_object_vars($this->Config))) {
-                return $this->Config->{$name};
-            }
-        }
-        return parent::__get($name);
-    }
-
-
-
-    function __set ($name, $value)
-    {
-        parent::__set($name, $value);
-
-        switch ($name) {
-            case 'dirpath':
-            case 'REPO_DIRPATH':
-                $this->fetch_from_repo();
-                break;
-        }
-    }
+//    function __get ($name)
+//    {
+//        if (!array_key_exists($name, get_object_vars($this))) {
+//            if (array_key_exists($name, get_object_vars($this->Config))) {
+//                return $this->Config->{$name};
+//            }
+//        }
+//        return parent::__get($name);
+//    }
+//
+//
+//
+//    function __set ($name, $value)
+//    {
+//        parent::__set($name, $value);
+//
+//        switch ($name) {
+//            case 'dirpath':
+//            case 'REPO_DIRPATH':
+//                $this->fetch_from_repo();
+//                break;
+//        }
+//    }
 
     function jsonSerialize ()
     {

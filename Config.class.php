@@ -29,7 +29,7 @@ class Config
 
     function check_required (array $required = [])
     {
-        $required = array_merge($required, ['type']);
+        $required = array_merge($required, []);
 
         foreach ($required as $r) {
             if (!isset($this->{$r})) {
