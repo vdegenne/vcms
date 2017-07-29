@@ -6,7 +6,7 @@ use JsonSerializable;
 class User extends VObject
     implements JsonSerializable
 {
-    protected $user_id;
+    public $user_id;
 
     protected $email;
     protected $password;
