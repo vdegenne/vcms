@@ -7,7 +7,7 @@ class ResourceFactory
 {
     /**
      * @param string $dirpath
-     * @return vcms\resources\Resource
+     * @return Resource
      */
     static function create_resource_from_repo (string $dirpath)
     {

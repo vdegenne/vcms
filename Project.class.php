@@ -99,6 +99,8 @@ class Project extends ConfigurableObject
         }
 
         $this->Config = Object::cast(json_decode(file_get_contents($configFilepath)), '\\vcms\\ProjectConfig');
+
+        $this->Config->process_attributes();
     }
 
 

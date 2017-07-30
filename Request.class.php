@@ -15,11 +15,6 @@ class Request extends VObject
 {
 
     /**
-     * @var Request Singleton
-     */
-    static protected $Request;
-
-    /**
      * the URI from the http request (query string trimmed).
      * @var string
      */
@@ -63,13 +58,22 @@ class Request extends VObject
     private $Redirection;
 
 
-    public function __construct ()
+    public function __construct (string $uri = null, string $method = null)
     {
         parent::__construct();
-        if (isset($_SERVER['REDIRECT_URL'])) {
-            $this->requestURI = trim($_SERVER['REDIRECT_URL'], '/');
+
+        if ($uri === null) {
+            if (isset($_SERVER['REDIRECT_URL'])) {
+                $uri = trim($_SERVER['REDIRECT_URL'], '/');
+            }
         }
-        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->requestURI = $uri;
+
+        if ($method === null) {
+            $method = $_SERVER['REQUEST_METHOD'];
+        }
+        $this->method = $method;
+
 
         // $this->Domain = $Domain;
 
@@ -91,13 +95,9 @@ class Request extends VObject
     }
 
 
-    static function get ()
+    static function generate_http_request ()
     {
-        if (self::$Request === null) {
-            self::$Request = new Request();
-        }
-
-        return Request::$Request;
+        return new Request();
     }
 
 

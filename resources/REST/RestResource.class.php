@@ -49,17 +49,12 @@ class RestResource extends VResource
             }
         }
 
-        function get_method_file ($method)
-        {
-
-        }
-
-        chdir($this->dirpath);
+        // chdir($this->dirpath);
         ob_start();
-        include $this->restContentFilename;
+        include PROJECT_LOCATION . '/' . $this->dirpath . '/' . $this->restContentFilename;
         $this->Response->content = ob_get_contents();
-        ob_end_clean();
-        chdir($Project->location);
+        @ob_end_clean();
+        // chdir($Project->location);
     }
 
 

@@ -4,8 +4,8 @@ namespace vcms\resources;
 
 class VResource extends Resource
 {
-    const REPO_DIRPATH = 'resources';
-    public static $REPO_DIRPATH = 'resources';
+    const REPO_DIRPATH = 'pages';
+    // public static $REPO_DIRPATH = 'resources';
 
 
     function process_response ()

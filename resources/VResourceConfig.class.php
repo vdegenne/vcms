@@ -24,6 +24,8 @@ class VResourceConfig extends Config
     public $authentication_db;
     public $authentication_table;
 
+    public $translations_table;
+
 
     public $get_params;
     public $post_params;

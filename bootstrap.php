@@ -4,6 +4,7 @@ use vcms\Request;
 use vcms\resources\ResourceConfigFactory;
 use vcms\resources\FeedbackResource;
 
+use vcms\resources\VResource;
 use vcms\Session;
 use vcms\User;
 use vcms\database\Credential;
@@ -20,13 +21,13 @@ require_once __DIR__ . "/__autoloader.inc.php";
 
 
 /* the http request object with some useful properties */
-$Request = Request::get();
+$Request = Request::generate_http_request();
 $QueryString = $Request->QueryString;
 
 /** @var \vcms\resources\Resource $Resource */
 $Resource = $Request->generate_resource();
 $Resource->Config->fill_the_blanks(
-    ResourceConfigFactory::create_config_object('resources/resources.json', 'V'));
+    ResourceConfigFactory::create_config_object(VResource::REPO_DIRPATH . '/resources.json', 'V'));
 
 /**
  * This Object is used to send a

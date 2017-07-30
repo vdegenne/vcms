@@ -8,11 +8,27 @@ class ProjectConfig extends Config
 {
     const CONFIGURATION_FILENAME = 'project.json';
 
-
     public $name;
-    public $env;
 
+    /**
+     * @var boolean
+     */
+    public $translation_support;
+    public $langs;
+
+
+    public $env;
     public $credentials_file;
+
+
+
+    function process_attributes ()
+    {
+        $this->translation_support = isset($this->langs);
+
+        parent::process_attributes();
+    }
+
 
     function check_required (array $required = [])
     {

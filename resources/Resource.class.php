@@ -79,6 +79,13 @@ class Resource extends ConfigurableObject
     function process_response ()
     {
         $this->Response->mimetype = $this->mimetype;
+
+        /**
+         * We make sure there is not a running buffer
+         * as processing Resources can embedded other
+         * Resources that possibly could stress send.
+         */
+        @ob_end_clean();
     }
 
 
