@@ -11,8 +11,7 @@ use Exception;
 use vcms\resources\VResource;
 
 
-class Request extends VObject
-{
+class Request extends VObject {
 
     /**
      * the URI from the http request (query string trimmed).
@@ -28,9 +27,9 @@ class Request extends VObject
     public $method;
 
 
-
     /**
-     * @var string Language of the request
+     * The language of the Request.
+     * @var string
      */
     private $lang;
 
@@ -60,11 +59,21 @@ class Request extends VObject
 
     public function __construct (string $uri = null, string $method = null)
     {
+        global $Project;
+
         parent::__construct();
 
         if ($uri === null) {
-            if (isset($_SERVER['REDIRECT_URL'])) {
-                $uri = trim($_SERVER['REDIRECT_URL'], '/');
+
+            $uri = trim($_SERVER['REDIRECT_URL'], '/');
+
+            if ($Project->translation_support) {
+                $brokenUri = explode('/', $uri);
+                if (array_search($brokenUri[0], $Project->langs) !== false) {
+                    $this->lang = $brokenUri[0];
+                    array_shift($brokenUri);
+                    $uri = implode('/', $brokenUri);
+                }
             }
         }
         $this->requestURI = $uri;
@@ -82,16 +91,16 @@ class Request extends VObject
         /**
          * the Request is building the Website object
          */
-//        $this->Website = new Website();
-//
-//        $this->Page = new Page($this, $this->Website->options->pages);
-//        if ($this->Page->needsSession) {
-//            session_start();
-//        }
-//
-//        $this->resolve_hreflang();
-//
-//        $this->Page->load_metadatas();
+        //        $this->Website = new Website();
+        //
+        //        $this->Page = new Page($this, $this->Website->options->pages);
+        //        if ($this->Page->needsSession) {
+        //            session_start();
+        //        }
+        //
+        //        $this->resolve_hreflang();
+        //
+        //        $this->Page->load_metadatas();
     }
 
 
@@ -187,26 +196,22 @@ class Request extends VObject
 
         /* based on hl */
         if ($QS->has('hl')) {
-//      echo 'set the lang based on hl<br>';
+            //      echo 'set the lang based on hl<br>';
             $this->lang = $QS->hl;
-        } /* based on session */
-        else if ($needsSession && isset($_SESSION['lang'])) {
-//      echo 'set the lang based on session<br>';
+        } /* based on session */ else if ($needsSession && isset($_SESSION['lang'])) {
+            //      echo 'set the lang based on session<br>';
             $this->lang = $_SESSION['lang'];
-        } /* based on cookie */
-        else if (isset($_COOKIE['hreflang'])) {
-//      echo 'set the lang based on cookie<br>';
+        } /* based on cookie */ else if (isset($_COOKIE['hreflang'])) {
+            //      echo 'set the lang based on cookie<br>';
             $this->lang = $_COOKIE['hreflang'];
-        } /* based on preferred languages amongst availables */
-        else if (isset($options->availableLanguages)) {
-//      echo 'set the lang based on available preferred language<br>';
+        } /* based on preferred languages amongst availables */ else if (isset($options->availableLanguages)) {
+            //      echo 'set the lang based on available preferred language<br>';
             $this->lang = Lang::get_prefered_language($options->availableLanguages);
             if ($this->lang === false) {
                 $this->lang = $options->availableLanguages[0];
             }
-        } /* based on preferred languages */
-        else {
-//      echo 'set the lang based on preferred language<br>';
+        } /* based on preferred languages */ else {
+            //      echo 'set the lang based on preferred language<br>';
             $this->lang = Lang::get_prefered_language();
             goto end;
         }
@@ -223,17 +228,12 @@ class Request extends VObject
 
         end:
         if (!isset($_COOKIE['hreflang']) || ($_COOKIE['hreflang'] !== $this->lang)) {
-            setcookie('hreflang',
-                $this->lang,
-                time() + 60 * 60 * 24 * 30,
-                '/',
-                ($Domain->MasterDomain) !== null ? $Domain->MasterDomain->name : $Domain->name
-            );
+            setcookie('hreflang', $this->lang, time() + 60 * 60 * 24 * 30, '/', ($Domain->MasterDomain) !== null ? $Domain->MasterDomain->name : $Domain->name);
         }
 
 
         if ($needsSession) {
-//      echo 'set the session attr lang' . NL;
+            //      echo 'set the session attr lang' . NL;
             $_SESSION['lang'] = $this->lang;
         }
         return true;
@@ -314,13 +314,7 @@ class Request extends VObject
         $url .= $uri;
 
         if ($withQS) {
-            $url
-                .= (is_null($QS))
-                ? ((empty($this->QueryString->get_arguments()))
-                    ? '' : '?' . $this->QueryString)
-                : ((empty($QS))
-                    ? ''
-                    : '?' . (new QueryString($QS)));
+            $url .= (is_null($QS)) ? ((empty($this->QueryString->get_arguments())) ? '' : '?' . $this->QueryString) : ((empty($QS)) ? '' : '?' . (new QueryString($QS)));
         }
 
         return $url;
