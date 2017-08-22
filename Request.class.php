@@ -76,6 +76,12 @@ class Request extends VObject {
                 }
             }
         }
+        else {
+            if (($querystringPos = strpos($uri, '?')) !== false) {
+                $querystringParams = substr($uri, $querystringPos + 1);
+                $uri = substr($uri, 0, $querystringPos);
+            }
+        }
         $this->requestURI = $uri;
 
         if ($method === null) {
@@ -87,7 +93,12 @@ class Request extends VObject {
         // $this->Domain = $Domain;
 
         $this->QueryString = new QueryString($_GET);
-
+        if (isset($querystringParams)) {
+            foreach(explode('&', $querystringParams) as $pair) {
+                list($key, $value) = explode('=', $pair);
+                $this->QueryString->$key = $value;
+            }
+        }
         /**
          * the Request is building the Website object
          */

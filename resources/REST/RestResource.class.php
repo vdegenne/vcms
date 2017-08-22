@@ -29,13 +29,14 @@ class RestResource extends VResource
     }
 
 
-    function process_response ()
+    function process_response (): string
     {
         foreach ($GLOBALS as $globalname => $globalvalue) {
             global $$globalname;
         }
 
-        parent::process_response();
+        $Request = $this->Request;
+        $QueryString = $this->Request->QueryString;
 
         /* make GET and POST arguments local variables */
         if ($this->Config->get_params) {
@@ -49,12 +50,13 @@ class RestResource extends VResource
             }
         }
 
-        // chdir($this->dirpath);
+
         ob_start();
         include PROJECT_LOCATION . '/' . $this->dirpath . '/' . $this->restContentFilename;
         $this->Response->content = ob_get_contents();
-        @ob_end_clean();
-        // chdir($Project->location);
+        ob_end_clean();
+
+        return parent::process_response();
     }
 
 

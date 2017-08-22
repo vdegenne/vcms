@@ -54,6 +54,9 @@ if ($Session->User === null) {
     $Session->User = new User();
 }
 
+if (file_exists(PROJECT_LOCATION . '/includes/bootstrap.php')) {
+    include PROJECT_LOCATION . '/includes/bootstrap.php';
+}
 
 /* redirect if authentication is needed */
 if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated) {

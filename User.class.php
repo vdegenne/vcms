@@ -8,6 +8,8 @@ class User extends VObject
 {
     public $user_id;
 
+    public $name;
+
     protected $email;
     protected $password;
 

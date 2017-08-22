@@ -76,7 +76,7 @@ class Resource extends ConfigurableObject
         $this->Response->send();
     }
 
-    function process_response ()
+    function process_response (): string
     {
         $this->Response->mimetype = $this->mimetype;
 
@@ -85,7 +85,8 @@ class Resource extends ConfigurableObject
          * as processing Resources can embedded other
          * Resources that possibly could stress send.
          */
-        @ob_end_clean();
+//        @ob_end_clean();
+        return $this->Response->content;
     }
 
 

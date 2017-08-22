@@ -8,12 +8,9 @@ class VResource extends Resource
     // public static $REPO_DIRPATH = 'resources';
 
 
-    function process_response ()
+    function process_response (): string
     {
         global $Request, $Feedback;
-
-        parent::process_response();
-
 
         if ($this->Config->get_params !== null) {
             if (!$Request::has_get($this->Config->get_params)) {
@@ -25,6 +22,8 @@ class VResource extends Resource
                 $Feedback->failure('needs arguments.');
             }
         }
+
+        return parent::process_response();
     }
 
 }

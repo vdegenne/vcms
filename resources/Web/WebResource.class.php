@@ -28,10 +28,8 @@ class WebResource extends Resource {
         }
     }
 
-    function process_response (string $processorFilepath = null, ...$globals)
+    function process_response (string $processorFilepath = null, ...$globals): string
     {
-
-        parent::process_response();
 
         foreach ($GLOBALS as $globalname => $globalvalue) {
             global $$globalname;
@@ -56,6 +54,8 @@ class WebResource extends Resource {
         include 'layouts/structure.php';
         $this->Response->content = ob_get_contents();
         ob_end_clean();
+
+        return parent::process_response();
     }
 
 }

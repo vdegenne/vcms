@@ -19,6 +19,6 @@ class Response
     function send ()
     {
         header('content-type: ' . $this->mimetype);
-        exit($this->content);
+        echo $this->content;
     }
 }

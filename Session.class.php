@@ -2,8 +2,7 @@
 namespace vcms;
 
 
-class Session extends VObject
-{
+class Session extends VObject {
     /**
      * @var User
      */
@@ -17,10 +16,8 @@ class Session extends VObject
         /* get the saved properties back */
         $Session = new Session();
 
-        foreach (get_object_vars($Session) as $propName => $propValue) {
-            if (@$_SESSION[$propName]) {
-                $Session->{$propName} = $_SESSION[$propName];
-            }
+        foreach ($_SESSION as $propName => $propValue) {
+            $Session->{$propName} = $_SESSION[$propName];
         }
 
         return $Session;
@@ -28,10 +25,10 @@ class Session extends VObject
 
     function __set ($name, $value)
     {
-        if (array_key_exists($name, get_object_vars($this))) {
-            $this->{$name} = $value;
-            $_SESSION[$name] = $this->{$name};
-        }
+        //        if (array_key_exists($name, get_object_vars($this))) {
+        $this->{$name} = $value;
+        $_SESSION[$name] = $this->{$name};
+        //        }
     }
 
 

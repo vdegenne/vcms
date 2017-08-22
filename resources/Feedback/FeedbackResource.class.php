@@ -36,9 +36,9 @@ class FeedbackResource extends Resource
         $this->send();
     }
 
-    function process_response ()
+    function process_response (): string
     {
-        parent::process_response();
         $this->Response->content=json_encode($this->get_last_child_publics());
+        return parent::process_response();
     }
 }

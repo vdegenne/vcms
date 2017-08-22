@@ -6,8 +6,11 @@ namespace vcms\database;
 
 use vcms\AutoLoader;
 use vcms\VObject;
+use vcms\VString;
 
 class EntityManager extends VObject {
+
+    static protected $singletons;
 
     /** @var Database */
     protected $Database;
@@ -16,71 +19,68 @@ class EntityManager extends VObject {
     public $objectname;
 
 
-    //    function __construct () {
-    //        parent::__construct();
-    //    }
 
-
-    static function construct (string $tablename, string $objectname = null, Database $Database = null)
+    static function get (string $tablename, string $objectname = null, Database $Database = null): EntityManager
     {
+        if (isset(self::$singletons[$tablename])) {
+            return self::$singletons[$tablename];
+        }
 
-        $Obj = new EntityManager();
+        $Em = new EntityManager();
 
         if ($Database === null) {
             global $Database;
             if ($Database === null) {
                 throw new \Exception('needs a Database Object');
             } else {
-                $Obj->Database = $Database;
+                $Em->Database = $Database;
             }
         }
 
-        $Obj->tablename = $tablename;
+        $Em->tablename = $tablename;
 
-        /**
-         * If the objectname is null,
-         * we try to resolve from the tablename
-         */
+
+        /** If no object were specified, we try to resolve a name */
         if ($objectname === null) {
             $pieces = explode('.', $tablename);
             $lastPiece = array_pop($pieces);
-            $lastPiece[0] = strtoupper($lastPiece[0]);
+//            $lastPiece[0] = strtoupper($lastPiece[0]);
             if ($lastPiece[strlen($lastPiece) - 1] === 's') {
                 $lastPiece = substr($lastPiece, 0, -1);
             }
+            $lastPiece = VString::ToCamelCase($lastPiece, '_');
             array_push($pieces, $lastPiece);
-            $Obj->objectname = implode('\\', $pieces);
+            $objectname = implode('\\', $pieces);
+        }
+        $Em->objectname = $objectname;
+
+        /** and we eval the object if no class were found */
+        if (empty(AutoLoader::search($objectname, true))) {
+            $Em->eval_object();
         }
 
-
-        /**
-         * we can eval the object if it doesn't exist
-         */
-        if (empty(AutoLoader::search($Obj->objectname, true))) {
-            $Obj->eval_object();
-        }
-
-        return $Obj;
+        self::$singletons[$tablename] = $Em;
+        return $Em;
     }
 
 
-    function eval_object () {
+    function eval_object ()
+    {
 
         $classdef = '';
-        
+
         $response = $this->Database->query("select * from {$this->tablename} limit 0");
-        
+
         for ($i = 0; $i < $response->columnCount(); ++$i) {
             $columnMeta = $response->getColumnMeta($i);
             $properties[] = $columnMeta['name'];
         }
 
-        if (($lastAntiSlash = strrpos($this->objectname, '\\')) >= 0) {
+        if (($lastAntiSlash = strrpos($this->objectname, '\\')) !== false) {
             $namespace = substr($this->objectname, 0, $lastAntiSlash);
             $classname = substr($this->objectname, $lastAntiSlash + 1);
             $classdef .= "namespace $namespace;\n";
-        }
-        else {
+        } else {
             $classname = $this->objectname;
         }
 
