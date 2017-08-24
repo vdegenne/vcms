@@ -20,7 +20,7 @@ class RestResource extends VResource
         $this->Request = $request;
 
         $this->determine_method_files();
-        $RestConfig = ResourceConfigFactory::create_config_object(
+        $RestConfig = ResourceConfigFactory::load_config_object(
             $this->dirpath . '/' . $this->restConfigFilename,
             'rest');
 

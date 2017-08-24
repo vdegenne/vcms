@@ -34,6 +34,10 @@ class VObject
 
     }
 
+    function __isset ($name)
+    {
+        return isset($this->$name);
+    }
 
     function get_last_child_publics (): array {
         $publics = [];

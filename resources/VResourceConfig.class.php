@@ -11,7 +11,7 @@ class VResourceConfig extends Config
 
 
     public $type;
-    public $stringType;
+    public $typeString;
 
     public $mimetype;
 
@@ -30,6 +30,7 @@ class VResourceConfig extends Config
     public $get_params;
     public $post_params;
 
+    public $session_user_object;
 
     function check_required (array $required = [])
     {
@@ -46,9 +47,9 @@ class VResourceConfig extends Config
     function process_attributes () {
 
         /* intervert type attributes */
-        $stringType = strtolower($this->type);
-        $stringType[0] = strtoupper($stringType[0]);
-        $this->stringType = $stringType;
-        $this->type = ResourceType::from_string($this->stringType);
+        $typeString = strtolower($this->type);
+        $typeString[0] = strtoupper($typeString[0]);
+        $this->typeString = $typeString;
+        $this->type = ResourceType::from_string($this->typeString);
     }
 }

@@ -9,9 +9,9 @@ use Exception;
 use vcms\VObject;
 
 class Resource extends ConfigurableObject
-    implements \JsonSerializable
-{
+     implements \JsonSerializable {
 
+    const GLOBAL_CONFIGURATION_FILENAME = 'inherit.json';
 
     /**
      * Location of the resource on disk.
@@ -39,6 +39,11 @@ class Resource extends ConfigurableObject
 
     function __construct (string $dirpath = null, $Config = null)
     {
+        $this->Config = $Config;
+
+        /* it means the resource was made manually
+           but we expect it to be loaded from a repository
+           if no Config Object is provided */
         if ($dirpath !== null) {
             $this->dirpath = $dirpath;
 
@@ -47,11 +52,12 @@ class Resource extends ConfigurableObject
             }
         }
 
-        $this->Config = $Config;
-        if ($this->Config === null) { /* little bit hacky but works */
+        /* we prepare a Config Object if none is provided */
+        if ($this->Config === null) {
             $classname = get_class($this) . 'Config';
             $this->Config = new $classname();
         }
+
         $this->Response = new Response();
     }
 
@@ -59,11 +65,12 @@ class Resource extends ConfigurableObject
 
     protected function load_configuration ()
     {
-        $this->Config=ResourceConfigFactory::create_config_object($this->dirpath);
+        $this->Config = ResourceConfigFactory::load_config_object($this->dirpath);
     }
 
 
-    function dump_json () {
+    function dump_json ()
+    {
         //$this->process_response();
         $this->Response->content = json_encode($this, JSON_PRETTY_PRINT);
         $this->Response->mimetype = 'application/json';
@@ -85,34 +92,34 @@ class Resource extends ConfigurableObject
          * as processing Resources can embedded other
          * Resources that possibly could stress send.
          */
-//        @ob_end_clean();
+        //        @ob_end_clean();
         return $this->Response->content;
     }
 
 
-//    function __get ($name)
-//    {
-//        if (!array_key_exists($name, get_object_vars($this))) {
-//            if (array_key_exists($name, get_object_vars($this->Config))) {
-//                return $this->Config->{$name};
-//            }
-//        }
-//        return parent::__get($name);
-//    }
-//
-//
-//
-//    function __set ($name, $value)
-//    {
-//        parent::__set($name, $value);
-//
-//        switch ($name) {
-//            case 'dirpath':
-//            case 'REPO_DIRPATH':
-//                $this->fetch_from_repo();
-//                break;
-//        }
-//    }
+    //    function __get ($name)
+    //    {
+    //        if (!array_key_exists($name, get_object_vars($this))) {
+    //            if (array_key_exists($name, get_object_vars($this->Config))) {
+    //                return $this->Config->{$name};
+    //            }
+    //        }
+    //        return parent::__get($name);
+    //    }
+    //
+    //
+    //
+    //    function __set ($name, $value)
+    //    {
+    //        parent::__set($name, $value);
+    //
+    //        switch ($name) {
+    //            case 'dirpath':
+    //            case 'REPO_DIRPATH':
+    //                $this->fetch_from_repo();
+    //                break;
+    //        }
+    //    }
 
     function jsonSerialize ()
     {

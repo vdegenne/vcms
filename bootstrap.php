@@ -26,8 +26,8 @@ $QueryString = $Request->QueryString;
 
 /** @var \vcms\resources\Resource $Resource */
 $Resource = $Request->generate_resource();
-$Resource->Config->fill_the_blanks(
-    ResourceConfigFactory::create_config_object(VResource::REPO_DIRPATH . '/resources.json', 'V'));
+//$Resource->Config->fill_the_blanks(
+//    ResourceConfigFactory::create_config_object(VResource::REPO_DIRPATH . '/resources.json', 'V'));
 
 /**
  * This Object is used to send a
@@ -48,10 +48,22 @@ if ($Resource->Config->needs_database) {
     $Database = Database::get_from_handler($Resource->Config->database);
 }
 
-/** @var Session $Session */
-$Session = Session::open();
-if ($Session->User === null) {
-    $Session->User = new User();
+$Session = new Session();
+/* if no User Object is in the Session
+   it means that is the first time the client visit the app
+   or the client removes the php session cookie
+   no problem, let's make a new User session */
+if (!isset($Session->User)) {
+    $userObject;
+    if (($userObject = $Resource->Config->session_user_object) !== null) {
+        if (!is_subclass_of($userObject, 'vcms\\User')) {
+            throw new Exception('The custom user object needs to be a subclass of vcms\\User');
+        }
+        $Session->User = new $Resource->Config->session_user_object();
+    }
+    else {
+        $Session->User = new User();
+    }
 }
 
 if (file_exists(PROJECT_LOCATION . '/includes/bootstrap.php')) {
