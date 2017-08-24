@@ -14,39 +14,40 @@
  * expanded.
  */
 
+use vcms\FileSystem;
+require_once __DIR__ . "/FileSystem.class.php";
+require_once __DIR__ . '/AutoLoader.class.php';
 
-
-function search_class ($className, $path)
-{
-    require_once 'FileSystem.class.php';
-
-    if (file_exists("$path/$className.class.php")) {
-        include_once "$path/$className.class.php";
-    }
-
-    $directories = vcms\FileSystem::get_directories($path);
-
-    foreach ($directories as $directory) {
-        search_class($className, "$path/$directory");
-
-    }
-}
-
-
-function vcms_autoload ($classPath) {
-
-    global $Project;
-
-    $namespaces = explode('\\', $classPath);
-    $className = array_pop($namespaces);
-
-    foreach ($Project->get_include_dirpaths() as $path) {
-        search_class($className, $path);
-    }
-}
+//function search_class ($className, $path)
+//{
+//
+//    if (file_exists("$path/$className.class.php")) {
+//        include_once "$path/$className.class.php";
+//    }
+//
+//    $directories = FileSystem::get_directories($path);
+//
+//    foreach ($directories as $directory) {
+//        search_class($className, "$path/$directory");
+//
+//    }
+//}
+//
+//
+//function vcms_autoload ($classPath) {
+//
+//    global $Project;
+//
+//    $namespaces = explode('\\', $classPath);
+//    $className = array_pop($namespaces);
+//
+//    foreach ($Project->get_include_dirpaths() as $path) {
+//        search_class($className, $path);
+//    }
+//}
 
 /**
  * register the autoload function
  * http://php.net/manual/en/function.spl-autoload-register.php
  */
-spl_autoload_register('vcms_autoload');
+spl_autoload_register('vcms\AutoLoader::vcms_autoload');

@@ -7,8 +7,7 @@ use PDO;
 use PDOException;
 use Exception;
 
-class Database extends PDO
-{
+class Database extends PDO {
     const DEFAULT_DRIVER = DatabaseDriver::POSTGRESQL;
 
 
@@ -29,12 +28,10 @@ class Database extends PDO
         return new Database($matchingCreds[0]);
     }
 
-
     function __construct (Credential $Credential)
     {
 
-        switch ($Credential->driver)
-        {
+        switch ($Credential->driver) {
 
             case DatabaseDriver::POSTGRESQL:
                 $dsn = "pgsql:host=$Credential->ip;dbname=$Credential->databaseName";
@@ -50,7 +47,7 @@ class Database extends PDO
 
 
         try {
-            parent::__construct($dsn, $Credential->user, $Credential->password);
+            parent::__construct($dsn, $Credential->user, $Credential->get_password());
             $this->setAttribute(parent::ATTR_ERRMODE, parent::ERRMODE_EXCEPTION);
 
         } catch (PDOException $e) {

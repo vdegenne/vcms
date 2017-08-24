@@ -5,9 +5,9 @@ use vcms\database\Database;
 use vcms\User;
 use vcms\VcmsObject;
 use vcms\database\EntityManager;
+use vcms\VObject;
 
-class Authentication extends VcmsObject
-{
+class Authentication extends VObject {
     /**
      * The Database Object used for the authentication.
      * @var Database
@@ -33,30 +33,24 @@ class Authentication extends VcmsObject
 
     static function create_from_handler (string $db_handler, string $usersTable)
     {
-        $A=new Authentication(Database::get_from_handler($db_handler));
-        $A->usersTable=$usersTable;
+        $A = new Authentication(Database::get_from_handler($db_handler));
+        $A->usersTable = $usersTable;
 
         /* create the users entity manager */
-        $A->usersManager=EntityManager::create_manager(
-            $A->Database,
-            'vcms\UsersManager',
-            $A->usersTable,
-            'vcms\User',
-            false
-        );
+        $A->usersManager = EntityManager::get($A->usersTable, 'vcms\User');
 
         return $A;
     }
 
     function __construct (Database $Database)
     {
-        $this->Database=$Database;
+        $this->Database = $Database;
     }
 
 
     function verify ($username, $password): bool
     {
-        $sql=<<<SQL
+        $sql = <<<SQL
 select * from {$this->usersTable}
 where email=:email;
 SQL;
@@ -66,16 +60,16 @@ SQL;
 
         if ($s->rowCount() === 0) return false;
 
+        /** @var User $User */
         $User = $s->fetch();
         $User->isAuthenticated = false;
 
-        if (password_verify($password, $User->password)) {
+        if (password_verify($password, $User->get_password())) {
             $this->User = $User;
-            $this->User->password = '';
+            $this->User->set_password('');
             $this->User->isAuthenticated = true;
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }

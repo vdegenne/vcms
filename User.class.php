@@ -3,18 +3,26 @@ namespace vcms;
 
 use JsonSerializable;
 
-class User extends VcmsObject
+class User extends VObject
     implements JsonSerializable
 {
-    protected $user_id;
+    public $user_id;
 
-    protected $username;
+    public $name;
+
+    protected $email;
     protected $password;
 
-    protected $isAuthenticated;
+    public $isAuthenticated;
 
+
+    function get_password () {
+        return $this->password;
+    }
+    function set_password (string $password) {
+        $this->password = $password;
+    }
     function jsonSerialize () {
         return get_object_vars($this);
     }
-
 }

@@ -1,16 +1,19 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
-use Exception;
+
 
 class ResourceFactory
 {
-
+    /**
+     * @param string $dirpath
+     * @return Resource
+     */
     static function create_resource_from_repo (string $dirpath): Resource
     {
-        $Config=ResourceConfigFactory::create_config_object($dirpath);
+        $Config = ResourceConfigFactory::load_config_object($dirpath);
 
-        $classname = __NAMESPACE__ . '\\' . $Config->stringType . 'Resource';
+        $classname = __NAMESPACE__ . '\\' . $Config->typeString . 'Resource';
         $Resource = new $classname($dirpath, $Config);
 
         return $Resource;

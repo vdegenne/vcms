@@ -2,13 +2,13 @@
 namespace vcms;
 
 
-class QueryString extends VcmsObject
+class QueryString extends VObject
 {
     
     /**
      * @var array
      */
-    protected $arguments = [];
+    public $arguments = [];
 
 
 

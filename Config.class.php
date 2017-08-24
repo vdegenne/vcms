@@ -16,12 +16,20 @@ class Config
         }
     }
 
+    function replace_not_nulls (Config $Config)
+    {
+        foreach (get_object_vars($this) as $attname => $attvalue) {
+            if ($this->{$attname} !== null && isset($Config->{$attname})) {
+                $this->{$attname} = $Config->{$attname};
+            }
+        }
+    }
 
     function process_attributes () {}
 
     function check_required (array $required = [])
     {
-        $required = array_merge($required, ['type']);
+        $required = array_merge($required, []);
 
         foreach ($required as $r) {
             if (!isset($this->{$r})) {

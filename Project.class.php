@@ -4,14 +4,22 @@ namespace vcms;
 use vcms\utils\Object;
 
 require_once 'ProjectConfig.class.php';
-require_once 'VcmsObject.class.php';
+require_once 'VObject.class.php';
 require_once 'Object.class.php';
+require_once __DIR__ . '/ConfigurableObject.class.php';
 
 
-class Project extends VcmsObject
+
+class Project extends ConfigurableObject
 {
+
     const INCLUDES_DIRNAME = 'includes';
 
+    /**
+     * The singleton of the Project.
+     * @var Project
+     */
+    static protected $Project;
 
     /**
      * @var Array
@@ -19,31 +27,71 @@ class Project extends VcmsObject
     protected $include_dirpaths;
 
     /**
-     * Location of the project. It is set automatically in the bootstrap
+     * Location of the project.
      * @var string
      */
-    protected $location;
+    public $location;
 
     /**
      * Configuration Object of the Project.
      * @var ProjectConfig
      */
-    protected $Config;
+    public $Config;
 
 
 
-    public function __construct() {
+    public function __construct ()
+    {
+        parent::__construct();
 
+        $this->location = dirname(getcwd());
+        chdir($this->location);
+        define('PROJECT_LOCATION', $this->location);
+        /*
+         * The include dirpaths are used for the autoloader.
+         * The autoloader will automatically search for the classes
+         * to include from these directories (recursively)
+         */
+        $this->add_include_dirpaths(__DIR__);
+        $this->add_include_dirpaths($this->location . '/' . Project::INCLUDES_DIRNAME);
+
+        /* load the Project configurations */
+        $this->load_configurations();
+
+        /* needs to manage the exception and error handlers */
+        if ($this->Config->env == 'dev') {
+            ini_set('display_errors', 1);
+            error_reporting(E_ALL | E_STRICT);
+        }
     }
 
-    function add_include_dirpaths (...$dirpaths) {
-        foreach ($dirpaths as $p)
-        $this->include_dirpaths[] = $p;
+    static function get ()
+    {
+        if (self::$Project === null) {
+            self::$Project = new Project();
+        }
+        return self::$Project;
     }
 
-    function get_include_dirpaths () { return $this->include_dirpaths; }
 
-    private function update ()
+
+    function add_include_dirpaths (...$dirpaths)
+    {
+        foreach ($dirpaths as $p) {
+            $this->include_dirpaths[] = $p;
+        }
+    }
+
+    function get_include_dirpaths ()
+    {
+        return $this->include_dirpaths;
+    }
+
+
+
+
+
+    private function load_configurations ()
     {
         $configFilepath = $this->location . '/' . ProjectConfig::CONFIGURATION_FILENAME;
         if (!file_exists($configFilepath)) {
@@ -51,27 +99,21 @@ class Project extends VcmsObject
         }
 
         $this->Config = Object::cast(json_decode(file_get_contents($configFilepath)), '\\vcms\\ProjectConfig');
-    }
 
-    function __get ($name)
-    {
-        if (!array_key_exists($name, get_object_vars($this))) {
-            if (array_key_exists($name, get_object_vars($this->Config))) {
-                return $this->Config->{$name};
-            }
-        }
-        return parent::__get($name);
+        $this->Config->process_attributes();
     }
 
 
 
-    function __set($name, $value)
+
+
+    function __set ($name, $value)
     {
         parent::__set($name, $value);
 
         switch ($name) {
             case 'location':
-                $this->update();
+                $this->load_configurations();
                 break;
         }
     }

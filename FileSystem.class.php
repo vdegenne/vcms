@@ -144,13 +144,11 @@ class FileSystem {
    * @param string $delim
    * @return string
    */
-  public static function one_folder_up ($URI, $delim = '/') {
-
+  public static function one_folder_up ($URI, $delim = '/')
+  {
     $chunks = explode($delim, rtrim($URI, $delim));
-
     array_pop($chunks);
-
-    return (implode($delim, $chunks));
+    return implode($delim, $chunks);
   }
 
 

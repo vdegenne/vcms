@@ -1,47 +1,33 @@
 <?php
 use vcms\Project;
 use vcms\Request;
-use vcms\resources\implementations\ResourceConfigFactory;
-use vcms\resources\implementations\FEEDBACKResource;
+use vcms\resources\ResourceConfigFactory;
+use vcms\resources\FeedbackResource;
 
+use vcms\resources\VResource;
 use vcms\Session;
 use vcms\User;
 use vcms\database\Credential;
 use vcms\database\Database;
 use vcms\utils\Authentication;
 
-require_once "Project.class.php";
+require_once __DIR__ . "/Project.class.php";
 
-$Project=new Project();
-/*
- * The include dirpaths are used for the autoloader.
- * The autoloader will automatically search for the classes
- * to include from these directories (recursively)
- */
-$Project->location=dirname(getcwd());
-chdir($Project->location);
-$Project->add_include_dirpaths(__DIR__);
-$Project->add_include_dirpaths($Project->location . '/' . Project::INCLUDES_DIRNAME);
-
-if ($Project->env == 'dev') {
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL | E_STRICT);
-}
+$Project = Project::get();
 
 
 /* register the autoloader */
-require_once '__autoloader.inc.php';
-/* autoloader */
+require_once __DIR__ . "/__autoloader.inc.php";
 
 
 /* the http request object with some useful properties */
-$Request=Request::get();
-$QueryString=$Request->QueryString;
+$Request = Request::generate_http_request();
+$QueryString = $Request->QueryString;
 
-/** @var \vcms\resources\implementations\Resource $Resource */
-$Resource=$Request->generate_resource();
-$Resource->Config->fill_the_blanks(
-    ResourceConfigFactory::create_config_object('resources/resources.json'));
+/** @var \vcms\resources\Resource $Resource */
+$Resource = $Request->generate_resource();
+//$Resource->Config->fill_the_blanks(
+//    ResourceConfigFactory::create_config_object(VResource::REPO_DIRPATH . '/resources.json', 'V'));
 
 /**
  * This Object is used to send a
@@ -50,22 +36,39 @@ $Resource->Config->fill_the_blanks(
  * $Resource resource.
  * @var FEEDBACKResource $Feedback
  */
-$Feedback = new FEEDBACKResource();
-
-
+$Feedback = new FeedbackResource();
 
 /* prepare the database */
-Credential::$search_in=[__DIR__, $Project->location];
-$Database=null;
+Credential::$search_in = [__DIR__, PROJECT_LOCATION];
+if ($Project->credentials_file !== null) {
+    Credential::$search_in[] = $Project->credentials_file;
+}
+$Database = null;
 if ($Resource->Config->needs_database) {
-    $Database=Database::get_from_handler($Resource->Config->database);
+    $Database = Database::get_from_handler($Resource->Config->database);
 }
 
-$Session=Session::open();
-if ($Session->User === null) {
-    $Session->User=new User();
+$Session = new Session();
+/* if no User Object is in the Session
+   it means that is the first time the client visit the app
+   or the client removes the php session cookie
+   no problem, let's make a new User session */
+if (!isset($Session->User)) {
+    $userObject;
+    if (($userObject = $Resource->Config->session_user_object) !== null) {
+        if (!is_subclass_of($userObject, 'vcms\\User')) {
+            throw new Exception('The custom user object needs to be a subclass of vcms\\User');
+        }
+        $Session->User = new $Resource->Config->session_user_object();
+    }
+    else {
+        $Session->User = new User();
+    }
 }
 
+if (file_exists(PROJECT_LOCATION . '/includes/bootstrap.php')) {
+    include PROJECT_LOCATION . '/includes/bootstrap.php';
+}
 
 /* redirect if authentication is needed */
 if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated) {
@@ -80,16 +83,16 @@ if ($Resource->Config->needs_authentication && !$Session->User->isAuthenticated)
     exit();
 }
 if ($Resource->Config->is_auth_page) {
-    $Authentication=null;
+    $Authentication = null;
 
     /* if no Database, we create for the authentication */
     if ($Resource->Config->authentication_db !== null) {
-        $Authentication=Authentication::create_from_handler(
+        $Authentication = Authentication::create_from_handler(
             $Resource->Config->authentication_db,
             $Resource->Config->authentication_table
         );
     } else if ($Resource->Config->database !== null) {
-        $Authentication=Authentication::create_from_handler(
+        $Authentication = Authentication::create_from_handler(
             $Resource->Config->database,
             $Resource->Config->authentication_table
         );

@@ -1,9 +1,8 @@
 <?php
-namespace vcms\resources\implementations;
+namespace vcms\resources;
 
 
-class FEEDBACKResource extends Resource
-    implements \JsonSerializable
+class FeedbackResource extends Resource
 {
     /**
      * The message of the Feedback
@@ -37,18 +36,9 @@ class FEEDBACKResource extends Resource
         $this->send();
     }
 
-    function process_response ()
+    function process_response (): string
     {
-        parent::process_response();
-        $this->Response->content=json_encode($this);
-    }
-
-    function jsonSerialize ()
-    {
-        return [
-            'message'=>$this->message,
-            'success'=>$this->success,
-            'data'=>$this->data
-        ];
+        $this->Response->content=json_encode($this->get_last_child_publics());
+        return parent::process_response();
     }
 }
