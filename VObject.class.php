@@ -2,9 +2,10 @@
 namespace vcms;
 
 
+use Exception;
+
 class VObject
 {
-
     private $readonlys = [];
 
     function __construct ()
@@ -16,28 +17,33 @@ class VObject
         );
     }
 
+
+
     function __get ($name)
     {
         if (array_search($name, $this->readonlys) !== false) {
-            throw new \Exception('trying to get a readonly property');
+            throw new Exception('trying to get a readonly property');
         }
         return $this->$name;
     }
 
+
+
     function __set ($name, $value)
     {
         if (array_search($name, $this->readonlys) !== false) {
-            throw new \Exception('trying to modify a readonly property');
+            throw new Exception('Trying to modify a readonly property ('.$name.').');
         }
-
         $this->$name = $value;
-
     }
+
+
 
     function __isset ($name)
     {
         return isset($this->$name);
     }
+
 
     function get_last_child_publics (): array {
         $publics = [];

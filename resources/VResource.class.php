@@ -7,8 +7,12 @@ class VResource extends Resource
     const REPO_DIRPATH = 'pages';
     // public static $REPO_DIRPATH = 'resources';
 
+    /**
+     * @var VResourceConfig
+     */
+    public $Config;
 
-    function process_response (): string
+    function ensure_params()
     {
         global $Request, $Feedback;
 
@@ -22,7 +26,10 @@ class VResource extends Resource
                 $Feedback->failure('needs arguments.');
             }
         }
+    }
 
+    function process_response (): string
+    {
         return parent::process_response();
     }
 

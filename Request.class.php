@@ -3,7 +3,6 @@ namespace vcms;
 
 
 use vcms\resources\Resource;
-use vcms\resources\ResourceConfigFactory;
 use vcms\resources\ResourceFactory;
 use vcms\resources\ResourceType;
 use vcms\resources\ResourceException;
@@ -56,6 +55,14 @@ class Request extends VObject {
      */
     private $Redirection;
 
+    /**
+     * @var resources\Resource
+     */
+    public $associatedResource;
+
+
+
+
 
     public function __construct (string $uri = null, string $method = null)
     {
@@ -88,6 +95,9 @@ class Request extends VObject {
             $method = $_SERVER['REQUEST_METHOD'];
         }
         $this->method = $method;
+        if ($method === 'PUT') {
+            $_POST = array_merge($_POST, REST::parse_put_form_data());
+        }
 
 
         // $this->Domain = $Domain;
@@ -99,19 +109,8 @@ class Request extends VObject {
                 $this->QueryString->$key = $value;
             }
         }
-        /**
-         * the Request is building the Website object
-         */
-        //        $this->Website = new Website();
-        //
-        //        $this->Page = new Page($this, $this->Website->options->pages);
-        //        if ($this->Page->needsSession) {
-        //            session_start();
-        //        }
-        //
-        //        $this->resolve_hreflang();
-        //
-        //        $this->Page->load_metadatas();
+
+        $this->associatedResource = $this->generate_resource();
     }
 
 

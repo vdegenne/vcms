@@ -1,11 +1,24 @@
 <?php
 namespace vcms;
 
-use vcms\VObject;
 
 class Session extends VObject {
 
     function __construct () { session_start(); }
+
+
+
+    function get_session_user_object() {
+        global $Resource;
+
+        $sessionUserObject = $Resource->Config->session_user_object;
+        if ($sessionUserObject === null) {
+            $sessionUserObject = 'vcms\User';
+        }
+        return $sessionUserObject;
+    }
+
+
 
     function __set ($name, $value) {
         $_SESSION[$name] = $value;
@@ -20,5 +33,6 @@ class Session extends VObject {
     }
 
     function __get ($name) { return $_SESSION[$name]; }
+
 
 }

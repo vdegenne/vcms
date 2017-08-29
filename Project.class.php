@@ -78,6 +78,7 @@ class Project extends ConfigurableObject
     function add_include_dirpaths (...$dirpaths)
     {
         foreach ($dirpaths as $p) {
+            set_include_path($p);
             $this->include_dirpaths[] = $p;
         }
     }

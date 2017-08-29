@@ -22,21 +22,13 @@ require_once __DIR__ . "/__autoloader.inc.php";
 
 /* the http request object with some useful properties */
 $Request = Request::generate_http_request();
+// globals
 $QueryString = $Request->QueryString;
+$Resource = $Request->associatedResource;
 
-/** @var \vcms\resources\Resource $Resource */
-$Resource = $Request->generate_resource();
-//$Resource->Config->fill_the_blanks(
-//    ResourceConfigFactory::create_config_object(VResource::REPO_DIRPATH . '/resources.json', 'V'));
 
-/**
- * This Object is used to send a
- * json back to the front-end.
- * It can be sent before the main
- * $Resource resource.
- * @var FEEDBACKResource $Feedback
- */
-$Feedback = new FeedbackResource();
+
+
 
 /* prepare the database */
 Credential::$search_in = [__DIR__, PROJECT_LOCATION];
@@ -65,6 +57,8 @@ if (!isset($Session->User)) {
         $Session->User = new User();
     }
 }
+$GLOBALS['User'] = $Session->User;
+
 
 if (file_exists(PROJECT_LOCATION . '/includes/bootstrap.php')) {
     include PROJECT_LOCATION . '/includes/bootstrap.php';
@@ -262,6 +256,15 @@ if ($Resource->Config->is_auth_page) {
 //    global $Request;
 //    return call_user_func_array([$Request, 'mkurl'], func_get_args());
 //}
+
+/**
+ * This Object is used to send a
+ * json back to the front-end.
+ * It can be sent before the main
+ * $Resource resource.
+ * @var FEEDBACKResource $Feedback
+ */
+$Feedback = new FeedbackResource();
 
 $Resource->send();
 /**

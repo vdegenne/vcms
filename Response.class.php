@@ -20,5 +20,6 @@ class Response
     {
         header('content-type: ' . $this->mimetype);
         echo $this->content;
+        exit;
     }
 }

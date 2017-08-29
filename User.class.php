@@ -1,25 +1,26 @@
 <?php
 namespace vcms;
 
+use vcms\database\DatabaseEntity;
 use JsonSerializable;
 
-class User extends VObject
+
+class User extends DatabaseEntity
     implements JsonSerializable
 {
     public $user_id;
 
-    public $name;
 
     protected $email;
     protected $password;
 
-    public $isAuthenticated;
+    public $isAuthenticated = false;
 
 
     function get_password () {
         return $this->password;
     }
-    function set_password (string $password) {
+    function set_password ($password) {
         $this->password = $password;
     }
     function jsonSerialize () {

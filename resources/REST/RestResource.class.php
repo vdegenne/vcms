@@ -35,6 +35,8 @@ class RestResource extends VResource
             global $$globalname;
         }
 
+        parent::ensure_params();
+
         $Request = $this->Request;
         $QueryString = $this->Request->QueryString;
 
