@@ -18,7 +18,12 @@ class ProjectConfig extends Config
 
 
     public $env;
-    public $credentials_file;
+
+    /**
+     *
+     * @var array
+     */
+    public $db_credentials_search_paths;
 
 
 

@@ -327,19 +327,24 @@ RETURNING *;
 
 
 
-    static function from_position (string $sql): int
+    static function from_position (string $sql, string &$beforeKeyword = null): int
     {
         preg_match('/FROM|WHERE|NATURAL|INNER|JOIN|ORDER|GROUP/i', $sql, $match);
         if (count($match) !== 0) {
-            return strtolower($match[0]) === 'from' ? -1 : strpos($sql, $match[0]);
+            $beforeKeyword = strtolower($match[0]);
+            return ($beforeKeyword === 'from') ? -1 : strpos($sql, $match[0]);
         }
         return -1;
     }
 
     static function add_from_statement (string $sql, string $fromStmt) : string
     {
-        if (($frompos = self::from_position($sql)) >= 0) {
+        $frompos = static::from_position($sql, $beforeKeyword);
+        if ($frompos >= 0) {
             return substr($sql, 0, $frompos) . "$fromStmt " . substr($sql, $frompos);
+        }
+        elseif ($frompos === -1 && $beforeKeyword !== 'from') {
+            return $sql . " $fromStmt";
         }
         else {
             return $sql;

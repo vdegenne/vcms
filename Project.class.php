@@ -99,9 +99,9 @@ class Project extends ConfigurableObject
             throw new \Exception('configuration file not found.');
         }
 
-        $this->Config = Object::cast(json_decode(file_get_contents($configFilepath)), '\\vcms\\ProjectConfig');
-
-        $this->Config->process_attributes();
+//        $json = json_decode(file_get_contents($configFilepath));
+//        $this->Config = Object::cast($json, '\vcms\ProjectConfig');
+        $this->Config = ProjectConfig::construct_from_file($configFilepath);
     }
 
 

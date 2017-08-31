@@ -12,18 +12,18 @@ class ResourceType
 
     static function from_string (string $type): int
     {
-        switch ($type) {
+        switch (strtolower($type)) {
             case '':
-            case 'Plain':
+            case 'plain':
                 return self::PLAIN;
 
-            case 'Web':
+            case 'web':
                 return self::WEB;
 
-            case 'Rest':
+            case 'rest':
                 return self::REST;
 
-            case 'V':
+            case 'v':
                 return self::V;
         }
     }

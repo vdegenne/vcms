@@ -12,7 +12,7 @@ class ConfigurableObject extends Object
     {
         if (!array_key_exists($name, get_object_vars($this))) {
             if (array_key_exists($name, get_object_vars($this->Config))) {
-                return $this->Config->{$name};
+                return $this->Config->$name;
             }
         }
         return parent::__get($name);

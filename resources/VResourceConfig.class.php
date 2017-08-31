@@ -10,8 +10,8 @@ class VResourceConfig extends Config
     const CONFIGURATION_FILENAME = 'resource.json';
 
 
-    public $type;
-    public $typeString;
+    public $type = 'V';
+    public $typeString = 10;
 
     public $mimetype;
 
@@ -45,7 +45,6 @@ class VResourceConfig extends Config
     }
 
     function process_attributes () {
-
         /* intervert type attributes */
         $typeString = strtolower($this->type);
         $typeString[0] = strtoupper($typeString[0]);

@@ -11,6 +11,11 @@ class RestResource extends VResource
      */
     protected $Request;
 
+    /**
+     * @var RestResourceConfig
+     */
+    public $Config;
+
     public $restContentFilename;
     public $restConfigFilename;
 
