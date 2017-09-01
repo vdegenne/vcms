@@ -148,7 +148,7 @@ AND table_name=:table_name;
     }
 
 
-    function get_entity_from_id (int $entity_id) : DatabaseEntity
+    function get_entity_from_id (int $entity_id)
     {
         $sql = "
 SELECT *
@@ -156,8 +156,11 @@ FROM $this->fulltablename
 WHERE $this->primaryKey=:entity_id;
 ";
 
-        $s = $this->get_statement($sql, $entity_id);
-        return $s->fetch();
+        $Entity = $this->get_statement($sql, $entity_id)->fetch();
+        if ($Entity === FALSE) {
+            $Entity = null;
+        }
+        return $Entity;
     }
 
     function save_entity (DatabaseEntity $Entity)
@@ -320,9 +323,10 @@ RETURNING *;
             $classname = $this->objectname;
         }
 
-        $classdef .= "class $classname extends DatabaseEntity {}";
+        $classdef .= "class $classname extends \\vcms\database\DatabaseEntity {}";
 
         eval($classdef);
+
     }
 
 

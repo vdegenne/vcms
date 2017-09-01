@@ -10,7 +10,7 @@ class User extends DatabaseEntity
 {
     public $user_id;
 
-
+    public $username;
     protected $email;
     protected $password;
 
