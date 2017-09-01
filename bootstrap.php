@@ -10,7 +10,7 @@ use vcms\User;
 use vcms\database\Credential;
 use vcms\database\Database;
 use vcms\utils\Authentication;
-
+require __DIR__ . '/scripts/error_handling.inc.php';
 require_once __DIR__ . "/Project.class.php";
 
 $Project = Project::get();
