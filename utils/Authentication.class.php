@@ -91,10 +91,8 @@ SQL;
         $sessionUserObject = $Session->get_session_user_object();
         $usersEm = EntityManager::get($this->usersTable, $sessionUserObject);
 
-        $sql = "SELECT * FROM {$this->usersTable} WHERE email=:email;";
-
         /** @var \PDOStatement $s */
-        $s = $usersEm->get_statement($sql, $email);
+        $s = $usersEm->get_statement('SELECT * WHERE email=:email', $email);
 
         if ($s->rowCount() == 0)
             return false;
