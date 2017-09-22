@@ -2,16 +2,22 @@
 namespace vcms\resources;
 
 use vcms\ConfigurableObject;
+use vcms\RequestStack;
 use vcms\Response;
 use vcms\Request;
 use vcms\VcmsObject;
 use Exception;
 use vcms\VObject;
 
-class Resource extends ConfigurableObject
-     implements \JsonSerializable {
+class Resource extends ConfigurableObject {
 
     const GLOBAL_CONFIGURATION_FILENAME = 'inherit.json';
+
+    /**
+     * Content of the resource
+     * @var string
+     */
+    public $content;
 
     /**
      * Location of the resource on disk.
@@ -19,11 +25,6 @@ class Resource extends ConfigurableObject
      */
     protected $dirpath;
 
-    /**
-     * The filename of the content to process for the Response.
-     * @var string
-     */
-    // public $contentFilename;
 
     /**
      * The configuration Object of the Resource.
@@ -31,10 +32,6 @@ class Resource extends ConfigurableObject
      */
     public $Config;
 
-    /**
-     * @var Response
-     */
-    public $Response;
 
 
     function __construct (string $dirpath = null, $Config = null)
@@ -57,10 +54,7 @@ class Resource extends ConfigurableObject
             $classname = get_class($this) . 'Config';
             $this->Config = new $classname();
         }
-
-        $this->Response = new Response();
     }
-
 
 
     protected function load_configuration ()
@@ -68,61 +62,13 @@ class Resource extends ConfigurableObject
         $this->Config = ResourceConfigFactory::load_config_object($this->dirpath);
     }
 
+    function process () {}
 
-    function dump_json ()
+    function use_as_response()
     {
-        //$this->process_response();
-        $this->Response->content = json_encode($this, JSON_PRETTY_PRINT);
-        $this->Response->mimetype = 'application/json';
-        $this->Response->send();
+        if (!RequestStack::is_stack_empty()) {
+            RequestStack::set_last_request_response($this);
+        }
     }
 
-    function send ()
-    {
-        $this->process_response();
-        $this->Response->send();
-    }
-
-    function process_response (): string
-    {
-        $this->Response->mimetype = $this->mimetype;
-
-        /**
-         * We make sure there is not a running buffer
-         * as processing Resources can embedded other
-         * Resources that possibly could stress send.
-         */
-        //        @ob_end_clean();
-        return $this->Response->content;
-    }
-
-
-    //    function __get ($name)
-    //    {
-    //        if (!array_key_exists($name, get_object_vars($this))) {
-    //            if (array_key_exists($name, get_object_vars($this->Config))) {
-    //                return $this->Config->{$name};
-    //            }
-    //        }
-    //        return parent::__get($name);
-    //    }
-    //
-    //
-    //
-    //    function __set ($name, $value)
-    //    {
-    //        parent::__set($name, $value);
-    //
-    //        switch ($name) {
-    //            case 'dirpath':
-    //            case 'REPO_DIRPATH':
-    //                $this->fetch_from_repo();
-    //                break;
-    //        }
-    //    }
-
-    function jsonSerialize ()
-    {
-        return get_object_vars($this);
-    }
 }

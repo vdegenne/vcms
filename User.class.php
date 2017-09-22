@@ -6,7 +6,6 @@ use JsonSerializable;
 
 
 class User extends DatabaseEntity
-    implements JsonSerializable
 {
     public $user_id;
 
@@ -29,7 +28,5 @@ class User extends DatabaseEntity
     function set_password ($password) {
         $this->password = $password;
     }
-    function jsonSerialize () {
-        return get_object_vars($this);
-    }
+
 }

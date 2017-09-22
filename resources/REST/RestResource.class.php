@@ -34,16 +34,20 @@ class RestResource extends VResource
     }
 
 
-    function process_response (): string
+    function process ()
     {
-        foreach ($GLOBALS as $globalname => $globalvalue) {
-            global $$globalname;
+        $Resource = $this;
+        global $Session, $User;
+        $qs = $this->Request->QueryString;
+        $Feedback = $this->Feedback;
+        $Request = $this->Request;
+
+
+
+        if (!$this->ensure_params()) {
+            goto abort;
         }
 
-        parent::ensure_params();
-
-        $Request = $this->Request;
-        $QueryString = $this->Request->QueryString;
 
         /* make GET and POST arguments local variables */
         if ($this->Config->get_params) {
@@ -60,11 +64,13 @@ class RestResource extends VResource
 
         ob_start();
         include PROJECT_LOCATION . '/' . $this->dirpath . '/' . $this->restContentFilename;
-        $this->Response->content = ob_get_contents();
+        $this->content = ob_get_contents();
         ob_end_clean();
 
-        return parent::process_response();
+        abort:
     }
+
+
 
 
     function determine_method_files ()

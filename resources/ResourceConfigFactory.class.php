@@ -25,7 +25,7 @@ class ResourceConfigFactory {
             $_configPath = $configPath . '/' . self::RESOURCE_CONFIG_FILENAME;
         }
 
-        if (!file_exists($configPath)) {
+        if (!file_exists($_configPath)) {
             throw new ResourceException("$_configPath configuration file not found", 2);
         }
 

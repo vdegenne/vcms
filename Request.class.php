@@ -27,33 +27,11 @@ class Request extends VObject {
 
 
     /**
-     * The language of the Request.
-     * @var string
-     */
-    private $lang;
-
-    /**
-     * @var Domain Associated Domain object
-     */
-    private $Domain;
-
-
-
-    /**
      * The querystring of the Request.
      * @var QueryString
      */
     public $QueryString;
 
-    /**
-     * @var Website Associated Website object
-     */
-    private $Website;
-
-    /**
-     * @var Redirection
-     */
-    private $Redirection;
 
     /**
      * @var resources\Resource
@@ -61,7 +39,7 @@ class Request extends VObject {
     public $associatedResource;
 
 
-
+    public $response = null;
 
 
     public function __construct (string $uri = null, string $method = null)
@@ -111,6 +89,8 @@ class Request extends VObject {
         }
 
         $this->associatedResource = $this->generate_resource();
+
+        RequestStack::push_request($this, $this->associatedResource);
     }
 
 
@@ -145,9 +125,6 @@ class Request extends VObject {
         } catch (ResourceException $e) {
 
             switch ($e->getCode()) {
-
-                case ResourceException::MISSING_ARGUMENTS:
-                    throw new Exception($e->getMessage() . '(from ' . $resourceDirpath . ')');
 
                 case ResourceException::INTEGRITY_COMPROMISED:
                     $Resource = ResourceFactory::create_resource_from_repo(VResource::REPO_DIRPATH . '/404');
@@ -191,7 +168,24 @@ class Request extends VObject {
     }
 
 
+    function request () {
+        if ($this->response === null) {
+            $this->associatedResource->process();
 
+            $requested = RequestStack::pop_request();
+            /** @var Resource $resource */
+            $resource = $requested[1];
+            $this->response['content'] = $resource->content;
+            $this->response['mimetype'] = $resource->Config->mimetype;
+        }
+    }
+
+
+    function contents () : string
+    {
+        $this->request();
+        return $this->response['content'];
+    }
 
 
 
@@ -277,58 +271,6 @@ class Request extends VObject {
         }
     }
 
-
-    /**
-     * Deprecated, the Page object should be generated internally into the Request object
-     * @param $pagesOptions
-     * @return Page
-     */
-    function generate_Page ($pagesOptions)
-    {
-        /** In the Page Object relURI is rename in relPath
-         * since the Page is physical */
-        $this->Page = new Page($this, $pagesOptions);
-
-        return $this->Page;
-    }
-
-
-    function has_pending_redirect ()
-    {
-        return $this->Redirection !== null;
-    }
-
-
-    /**
-     * (m)a(k)e (url)
-     * will build an absolute URL with protocol, hostname,
-     * and path to a ressource.
-     *
-     * @param string $uri the path to the ressource
-     * @param bool $masterdomain
-     * @param bool $withQS
-     * @param null $QS
-     * @return string
-     */
-    function mkurl ($uri = '', $masterdomain = false, $withQS = true, $QS = null)
-    {
-
-        $url = 'http://' . ($masterdomain ? $this->Domain->MasterDomain->name : $this->Domain->name) . '/';
-
-        // inter-path ?
-        //    $url
-        //    .= strlen($this->urlPath)
-        //    ? ($this->urlPath . '/')
-        //    : '';
-
-        $url .= $uri;
-
-        if ($withQS) {
-            $url .= (is_null($QS)) ? ((empty($this->QueryString->get_arguments())) ? '' : '?' . $this->QueryString) : ((empty($QS)) ? '' : '?' . (new QueryString($QS)));
-        }
-
-        return $url;
-    }
 
 
     function __get ($name)

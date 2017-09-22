@@ -9,11 +9,9 @@ class PlainResource extends Resource {
         parent::__construct($dirpath, new PlainResourceConfig());
     }
 
-    function process_response (): string
+    function process ()
     {
-        $this->Response->content = file_get_contents($this->dirpath);
-
-        return parent::process_response();
+        $this->content = file_get_contents($this->dirpath);
     }
 
 

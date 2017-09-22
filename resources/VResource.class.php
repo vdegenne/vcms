@@ -5,32 +5,46 @@ namespace vcms\resources;
 class VResource extends Resource
 {
     const REPO_DIRPATH = 'pages';
-    // public static $REPO_DIRPATH = 'resources';
 
     /**
      * @var VResourceConfig
      */
     public $Config;
 
-    function ensure_params()
+    /**
+     * @var FeedbackResource
+     */
+    public $Feedback;
+
+
+    public function __construct ($dirpath = null, $Config = null)
     {
-        global $Request, $Feedback;
+        $this->Feedback = new FeedbackResource();
+
+        parent::__construct($dirpath, $Config);
+    }
+
+
+    function ensure_params() : bool
+    {
+        global $Request;
+
+        $Feedback = $this->Feedback;
 
         if ($this->Config->get_params !== null) {
             if (!$Request::has_get($this->Config->get_params)) {
                 $Feedback->failure('needs arguments');
+                return false;
             };
         }
         if ($this->Config->post_params !== null) {
             if (!$Request::has_post($this->Config->post_params)) {
                 $Feedback->failure('needs arguments.');
+                return false;
             }
         }
-    }
 
-    function process_response (): string
-    {
-        return parent::process_response();
+        return true;
     }
 
 }

@@ -8,14 +8,14 @@ class Session extends VObject {
 
 
 
-    function get_session_user_object() {
-        global $Resource;
+    function get_user_classname() {
+        global $Project;
 
-        $sessionUserObject = $Resource->Config->session_user_object;
-        if ($sessionUserObject === null) {
-            $sessionUserObject = 'vcms\User';
+        $sessionUserClassname = $Project->Config->session_user_classname;
+        if ($sessionUserClassname === null) {
+            $sessionUserClassname = 'vcms\User';
         }
-        return $sessionUserObject;
+        return $sessionUserClassname;
     }
 
 

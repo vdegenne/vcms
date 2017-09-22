@@ -6,10 +6,13 @@ namespace vcms\database;
 use PDO;
 use PDOException;
 use Exception;
+use vcms\utils\Object;
 
-class Database extends PDO {
+class Database extends PDO
+{
     const DEFAULT_DRIVER = DatabaseDriver::POSTGRESQL;
 
+    protected $search_path = '';
 
     static function get_from_handler (string $handler)
     {
@@ -27,6 +30,7 @@ class Database extends PDO {
         $matchingCreds = array_values($matchingCreds);
         return new Database($matchingCreds[0]);
     }
+
 
     function __construct (Credential $Credential)
     {
@@ -55,4 +59,12 @@ class Database extends PDO {
         }
     }
 
+
+
+    function set_search_path ($path) {
+        if ($path !== $this->search_path) {
+            $this->query('set search_path='.$path.',pg_catalog');
+            $this->search_path = $path;
+        }
+    }
 }

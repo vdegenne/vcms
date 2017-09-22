@@ -1,50 +1,45 @@
 <?php
-
 namespace vcms;
+
 
 class AutoLoader {
 
-    static function vcms_autoload ($classPath): array
+
+    static function searchClass (string $classPath, array &$founds = null)
     {
-        self::search($classPath);
-        return [];
-    }
+        $className = substr($classPath, strrpos($classPath, '\\') + 1);
 
-
-    static function search (string $classPath, bool $justChecking = false)
-    {
-        global $Project;
-
-        $namespaces = explode('\\', $classPath);
-        $className = array_pop($namespaces);
-
-
-        $founds = $justChecking ? [] : null;
-        foreach ($Project->get_include_dirpaths() as $path) {
-            self::search_class($className, $path, $founds);
+        foreach (INCLUDE_DIRPATHS as $path => $null) {
+            self::_searchClassRecursive($className, $path, $founds);
         }
-
-        return $founds;
     }
 
 
-    static function search_class ($className, $path, array &$founds = null)
+
+    protected static function _searchClassRecursive (
+        string $className,
+        string $path,
+        array &$founds = null)
     {
+
         $filepath = "$path/$className.class.php";
 
         if (file_exists($filepath)) {
-            if ($founds === null) {
-                include_once $filepath;
-            }
-            else {
-                $founds[] = $filepath;
+
+            if ($founds !== null) {
+                $founds[$filepath] = 0;
+            } else {
+                require_once $filepath;
             }
         }
 
-        $directories = FileSystem::get_directories($path);
+        $directories = FileSystem::getDirectories($path);
 
         foreach ($directories as $directory) {
-            self::search_class($className, "$path/$directory", $founds);
+            self::_searchClassRecursive(
+                $className,
+                "$path/$directory",
+                $founds);
         }
     }
 }

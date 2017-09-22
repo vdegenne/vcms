@@ -30,7 +30,8 @@ class VResourceConfig extends Config
     public $get_params;
     public $post_params;
 
-    public $session_user_object;
+    public $session_user_classname;
+
 
     function check_required (array $required = [])
     {

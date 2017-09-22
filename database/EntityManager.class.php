@@ -10,7 +10,7 @@ use vcms\VObject;
 use vcms\VString;
 
 
-class EntityManager extends VObject {
+class EntityManager {
 
     static protected $singletons;
 
@@ -39,54 +39,59 @@ class EntityManager extends VObject {
     /**
      * @var string
      */
-    public $primaryKey;
+    public $primarykey;
 
     public $objectname;
 
-    protected $tableFields;
+    protected $tableColumns;
 
 
 
-    /*************
-     * Functions
-     *************/
+
+
 
     static function get (string $tablename,
                          string $objectname = null,
-                         Database $Database = null): EntityManager
+                         Database $Database = null,
+                         bool $preventEval = false): EntityManager
     {
         $calledClass = get_called_class();
 
         if (isset(self::$singletons[$calledClass])
             && isset(self::$singletons[$calledClass][$tablename])
-            && isset(self::$singletons[$calledClass][$tablename][$objectname])) {
+            && isset(self::$singletons[$calledClass][$tablename][$objectname]))
+        {
             return self::$singletons[$calledClass][$tablename][$objectname];
         }
 
-        /** @var EntityManager $Em */
+        /** @var EntityManager $em */
         /* creating the singleton */
-        $Em = new $calledClass();
+        $em = new $calledClass();
 
         if ($Database === null) {
             global $Database;
             if ($Database === null) {
-                throw new Exception('Needs a Database Object.');
+                trigger_error('Needs a database object to make an EntityManager.', E_USER_ERROR);
             }
         }
+        $em->Database = $Database;
 
-        $Em->Database = $Database;
-        $Em->fulltablename = $tablename;
+
+        $em->fulltablename = $tablename;
         /* schema */
         if (($dotpos = strpos($tablename, '.')) !== FALSE) {
-            $Em->schema = substr($tablename, 0, $dotpos);
-            $Em->tablename = substr($tablename, $dotpos + 1);
+            $em->schema = substr($tablename, 0, $dotpos);
+            $em->tablename = substr($tablename, $dotpos + 1);
         }
         else {
-            $Em->tablename = $tablename;
+            // $em->tablename = $tablename;
+            trigger_error(
+                'Can\'t create the EntityManager without a schema. (Do you need to use "public" ?)',
+                E_USER_ERROR);
         }
 
-        $Em->tableFields = $Em->get_table_fields();
-        $Em->primaryKey = $Em->resolve_primary_key();
+        self::resolveTableColumns($em);
+        self::resolvePrimaryKey($em);
 
         /** If no object were specified, we try to resolve a name */
         if ($objectname === null) {
@@ -96,82 +101,268 @@ class EntityManager extends VObject {
                 $lastPiece = substr($lastPiece, 0, -1);
             }
             $lastPiece = VString::ToCamelCase($lastPiece, '_');
-            array_push($pieces, $lastPiece);
+            $pieces[] = $lastPiece;
             $objectname = implode('\\', $pieces);
         }
-        $Em->objectname = $objectname;
+        $em->objectname = $objectname;
 
-        /** and we eval the object if no class were found */
-        if (empty(AutoLoader::search($objectname, true))) {
-            $Em->eval_object();
+        /**
+         * We use the autoloader search function to find files
+         * associated with the entity name.
+         * true means "do not include if files are found"
+         */
+        if (!$preventEval) {
+
+            $justSearching = [];
+            AutoLoader::searchClass($objectname, $justSearching);
+
+            if (empty($justSearching)) {
+                self::evalObject($em);
+            }
         }
 
-        self::$singletons[$calledClass][$tablename][$objectname] = $Em;
-        return $Em;
+        self::$singletons[$calledClass][$tablename][$objectname] = $em;
+        return $em;
     }
 
-    function resolve_primary_key ()
-    {
-        $sql = "
-SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
-FROM   pg_index i
-JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                        AND a.attnum = ANY(i.indkey)
-WHERE  i.indrelid = '$this->fulltablename'::regclass
-AND    i.indisprimary;
-";
 
-        $s = $this->Database->query($sql);
-        $fetch = $s->fetch();
-        if (!isset($fetch['attname'])) {
-            throw new Exception('Couldn\'t find the primary key.');
+
+
+    function query ($sql,
+                    int $mode = PDO::FETCH_CLASS,
+                    $arg3 = null,
+                    array $ctorargs = array()) : PDOStatement
+    {
+        self::bind_table_to_sql($sql, $this->fulltablename);
+        $this->set_search_path();
+        if ($arg3 === null) {
+            $arg3 = $this->objectname;
         }
-        return $fetch['attname'];
-    }
-    function get_table_fields (): array
-    {
-        $sql = "
-SELECT *
-FROM information_schema.columns
-WHERE table_schema=:table_schema
-AND table_name=:table_name;
-";
-
-        $s = $this->get_statement(
-            $sql,
-            ['table_schema' => $this->schema, 'table_name' => $this->tablename],
-            8, // 8 = FETCH_CLASS
-            'StdClass'
-        );
-
-        return $s->fetchAll();
+        return $this->Database->query($sql, $mode, $arg3, $ctorargs);
     }
 
 
-    function get_entity_from_id (int $entity_id)
-    {
-        $sql = "
-SELECT *
-FROM $this->fulltablename
-WHERE $this->primaryKey=:entity_id;
-";
 
-        $Entity = $this->get_statement($sql, $entity_id)->fetch();
-        if ($Entity === FALSE) {
-            $Entity = null;
-        }
-        return $Entity;
+    /**
+     * Alias for get_statement. get_statement function name is a bit confusing (keeping
+     * the name for backward-compatibility).
+     */
+    function statement (string $sql, $placeholders = [], int $fetchMode = PDO::FETCH_CLASS, string $fetchObject = null) : PDOStatement { return $this->get_statement($sql, $placeholders, $fetchMode, $fetchObject); }
+
+    function get_statement (string $sql,
+                            $placeholders = [],
+                            int $fetchMode = PDO::FETCH_CLASS,
+                            string $fetchObject = null): PDOStatement
+    {
+
+        return $this->execute(
+            $this->prepare($sql, $fetchMode, $fetchObject),
+            $placeholders);
     }
 
-    function save_entity (DatabaseEntity $Entity)
+
+
+
+
+    function prepare (string $sql,
+                      int $fetchmode = PDO::FETCH_CLASS,
+                      string $fetchObject = null) : PDOStatement
     {
-        if (($existingEntity = $this->get_entity_from_id($Entity->{$this->primaryKey})) !== null) {
-            return $this->persist($Entity, $existingEntity);
+
+        self::bind_table_to_sql($sql, $this->fulltablename);
+        $statement = $this->Database->prepare($sql);
+
+        if ($fetchmode === 8) {
+            $objectname = $this->objectname;
+            $fetchObject !== null && $objectname = $fetchObject;
+            $statement->setFetchMode(8, $objectname);
         }
         else {
-            /* save */
+            $statement->setFetchMode($fetchmode);
+        }
+
+        return $statement;
+    }
+
+
+    function execute (PDOStatement $statement, $placeholders = []) : PDOStatement {
+
+        $this->set_search_path();
+
+        /* If the placeholder is a string */
+        if (!is_array($placeholders)) {
+            if (preg_match_all('/:([a-zA-Z]{1}[0-9a-zA-Z_]+)/', $statement->queryString, $matches)) {
+                if (count($matches[1]) > 1) {
+                    throw new Exception('too much placeholders');
+                }
+                $placeholders = [$matches[1][0] => $placeholders];
+            }
+            else {
+                $placeholders = [$placeholders];
+            }
+        }
+
+        /* string to array conversion */
+        foreach ($placeholders as &$p) {
+            if (gettype($p) === 'array') {
+                $p = '{'.join(',',array_keys($p)).'}';
+            }
+        }
+
+        $statement->execute($placeholders);
+        return $statement;
+    }
+
+
+    function set_search_path () {
+        $this->Database->set_search_path($this->schema);
+    }
+
+
+
+
+
+
+
+
+
+    static function resolvePrimaryKey (EntityManager $manager)
+    {
+        $manager->primarykey = $manager->Database->query(
+            'select a.attname--, format_type(a.atttypid, a.atttypmod) AS data_type
+                from pg_index i
+                join pg_attribute a on a.attrelid = i.indrelid
+                                    and a.attnum = any(i.indkey)
+                where i.indrelid = \''.$manager->fulltablename.'\'::regclass
+                and i.indisprimary'
+        )->fetchColumn();
+
+        if ($manager->primarykey === false) {
+            trigger_error(
+                'Couldn\'t find the primary key for the EntityManager.',
+                E_USER_ERROR);
         }
     }
+
+
+
+    protected static function resolveTableColumns (EntityManager $manager)
+    {
+        $manager->tableColumns = $manager->Database->query(
+            "SELECT *
+             FROM information_schema.columns
+             WHERE table_schema='$manager->schema'
+               AND table_name='$manager->tablename'"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    function getEntityFromId (int $entity_id)
+    {
+        $sql = "SELECT *
+                FROM {$this->fulltablename}
+                WHERE {$this->primarykey}={$entity_id}";
+
+        $entity = $this->query($sql)->fetch();
+
+        return $entity !== FALSE ? $entity : null;
+    }
+
+
+
+
+
+    function saveEntity (DatabaseEntity $entity)
+    {
+        $primarykey = $this->primarykey;
+
+        if (isset($entity->$primarykey)
+            && ($existing = $this->getEntityFromId($entity->$primarykey)) !== null)
+        {
+            return $this->persist($entity, $existing);
+        }
+        else {
+            return $this->insertEntity($entity);
+        }
+    }
+
+
+    /********************************
+     * INSERT ENTITY
+     ********************************/
+    function insertEntity (DatabaseEntity $entity) : DatabaseEntity
+    {
+        foreach ($this->tableColumns as $column) {
+            if ($column['is_nullable'] === 'NO') {
+                $notNullables[$column['column_name']] = 0;
+            }
+            else {
+                $nullables[$column['column_name']] = 0;
+            }
+            if (isset($column['column_default'])) {
+                $hasDefault[$column['column_name']] = 0;
+            }
+        }
+
+        foreach (get_object_vars($entity) as $prop => $value) {
+
+            if (isset($notNullables[$prop])) {
+                if ($value === null) {
+                    if (!isset($hasDefault[$prop])) {
+                        trigger_error(
+                            'You need to set "'.$notnullname.'" to insert the entity in the database.',
+                            E_USER_ERROR);
+                    }
+                }
+                $values[$prop] = $value;
+                unset($notNullables[$prop]);
+            }
+            elseif (isset($nullables[$prop])) {
+                $values[$prop] = $value;
+            }
+        }
+
+        foreach ($notNullables as $notnullname => $zero) {
+            if (!isset($hasDefault[$notnullname])) {
+                trigger_error(
+                    'You need to set "'.$notnullname.'" to insert the entity in the database.',
+                    E_USER_ERROR);
+            }
+        }
+
+        $sql = 'insert into '.$this->fulltablename .
+               ' ('.join(',', array_keys($values)).')' .
+               ' values' .
+               ' (:'.join(',:', array_keys($values)).')' .
+               ' returning *';
+
+        /**
+         * array to string conversion
+         */
+        foreach ($values as &$v) {
+            if (gettype($v) === 'array') {
+                $v = '{'.join(',', $v).'}';
+            }
+        }
+
+        $stmt = $this->Database->prepare($sql);
+        $stmt->execute($values);
+        $stmt->setFetchMode(PDO::FETCH_CLASS, $this->objectname);
+        return $stmt->fetch();
+    }
+
+
+
 
     function persist (DatabaseEntity $Entity, DatabaseEntity $existingEntity = null)
     {
@@ -250,80 +441,40 @@ RETURNING *;
     }
 
 
-
-
-
-    /******************************
-     * @param string $SQL
-     * @param array $placeholders
-     * @param int $fetchMode
-     * @param string|null $objectname
-     * @return PDOStatement
-     * @throws Exception
-     ******************************/
-    function get_statement (string $SQL,
-                            $placeholders = [],
-                            int $fetchMode = PDO::FETCH_CLASS,
-                            string $objectname = null): PDOStatement
-    {
-
-        $SQL = self::bind_table_to_sql($SQL, $this->fulltablename);
-
-        try {
-            /** @var PDOStatement $statement */
-            $statement = $this->Database->prepare($SQL);
-
-            if ($fetchMode === PDO::FETCH_CLASS) {
-                if ($objectname === null) {
-                    $objectname = $this->objectname;
-                }
-                $statement->setFetchMode(PDO::FETCH_CLASS, $objectname);
-            } else {
-                $statement->setFetchMode($fetchMode);
-            }
-
-            /* If the placeholder is a string */
-            if (!is_array($placeholders)) {
-                preg_match_all('/:([a-zA-Z]{1}[0-9a-zA-Z_]+)/', $SQL, $find);
-                if (count($find[1]) > 1) {
-                    throw new Exception('too much placeholders');
-                }
-
-                $placeholders = [$find[1][0] => $placeholders];
-            }
-
-            $statement->execute($placeholders);
-            return $statement;
-        } catch (PDOException $e) {
-            throw new Exception($e->getMessage());
-        }
+    function beginTransaction () {
+        $this->Database->beginTransaction();
+    }
+    function commit () {
+        $this->Database->commit();
+    }
+    function rollback () {
+        $this->Database->rollBack();
     }
 
 
 
-    /******************************
-     *
-     ******************************/
-    function eval_object ()
+
+    static function evalObject (EntityManager $em)
     {
         $classdef = '';
 
-        $response = $this->Database->query("select * from {$this->fulltablename} limit 0");
+        // uncomment and change if you need properties evaluation
+//        $response = $this->Database->query('select * from '.$this->fulltablename.' limit 0');
+//
+//        for ($i = 0; $i < $response->columnCount(); ++$i) {
+//            $columnMeta = $response->getColumnMeta($i);
+//            $properties[] = $columnMeta['name'];
+//        }
 
-        for ($i = 0; $i < $response->columnCount(); ++$i) {
-            $columnMeta = $response->getColumnMeta($i);
-            $properties[] = $columnMeta['name'];
-        }
-
-        if (($lastAntiSlash = strrpos($this->objectname, '\\')) !== false) {
-            $namespace = substr($this->objectname, 0, $lastAntiSlash);
-            $classname = substr($this->objectname, $lastAntiSlash + 1);
-            $classdef .= "namespace $namespace;\n";
+        if (($lastAntiSlash = strrpos($em->objectname, '\\')) !== false) {
+            $namespace = substr($em->objectname, 0, $lastAntiSlash);
+            $classname = substr($em->objectname, $lastAntiSlash + 1);
+            $classdef .= 'namespace '.$namespace.';';
         } else {
-            $classname = $this->objectname;
+            $classname = $em->objectname;
         }
 
-        $classdef .= "class $classname extends \\vcms\database\DatabaseEntity {}";
+        $classdef .= 'class '.$classname.' extends \\vcms\database\DatabaseEntity {}';
 
         eval($classdef);
 
@@ -331,7 +482,7 @@ RETURNING *;
 
 
 
-    static function from_position (string $sql, string &$beforeKeyword = null): int
+    static function from_position (string $sql, string &$beforeKeyword = null)
     {
         preg_match('/FROM|WHERE|NATURAL|INNER|JOIN|ORDER|GROUP/i', $sql, $match);
         if (count($match) !== 0) {
@@ -341,28 +492,25 @@ RETURNING *;
         return -1;
     }
 
-    static function add_from_statement (string $sql, string $fromStmt) : string
+    static function add_from_statement (string &$sql, string $fromStmt)
     {
         $frompos = static::from_position($sql, $beforeKeyword);
         if ($frompos >= 0) {
-            return substr($sql, 0, $frompos) . "$fromStmt " . substr($sql, $frompos);
+            $sql = substr($sql, 0, $frompos) . "$fromStmt " . substr($sql, $frompos);
         }
         elseif ($frompos === -1 && $beforeKeyword !== 'from') {
-            return $sql . " $fromStmt";
-        }
-        else {
-            return $sql;
+            $sql = $sql . " $fromStmt";
         }
     }
 
-    static function bind_table_to_sql (string $sql, string $tablename) : string
+    static function bind_table_to_sql (string &$sql, string $tablename)
     {
         /* UPDATE NOT IMPLEMENTED */
-        if (preg_match('/^\s*UPDATE/i', $sql)) {
-            return $sql;
+        if (preg_match('/^\s*(UPDATE|INSERT)/i', $sql)) {
+//            return $sql;
         }
         else {
-            return self::add_from_statement($sql, 'FROM ' . $tablename);
+            self::add_from_statement($sql, "FROM $tablename AS obj");
         }
     }
 }

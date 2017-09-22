@@ -23,22 +23,37 @@ class FeedbackResource extends Resource
     public $data;
 
 
-    function success ($message, $data = null) {
-        $this->success = true;
-        $this->message = $message;
-        $this->data = $data;
-        $this->send();
-    }
-    function failure ($message, $data = null) {
-        $this->success = false;
-        $this->message = $message;
-        $this->data = $data;
-        $this->send();
+    function success ($message = null, $data = null) {
+        $this->use_as_response(true, $message, $data);
     }
 
-    function process_response (): string
+    function failure ($message = null, $data = null) {
+        $this->use_as_response(false, $message, $data);
+    }
+
+    function use_as_response (bool $success = null, string $message = null, $data = null)
     {
-        $this->Response->content=json_encode($this->get_last_child_publics());
-        return parent::process_response();
+        if ($success !== null)
+            $this->success = $success;
+
+        if ($message !== null)
+            $this->message = $message;
+
+        if ($data !== null)
+            $this->data = $data;
+
+
+        $this->process();
+        parent::use_as_response();
+    }
+
+
+
+    function process ()
+    {
+        $this->content = json_encode([
+            'message' => $this->message,
+            'data' => $this->data
+        ]);
     }
 }

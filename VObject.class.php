@@ -24,7 +24,7 @@ class VObject
         if (array_search($name, $this->readonlys) !== false) {
             throw new Exception('trying to get a readonly property');
         }
-        return $this->$name;
+        return isset($this->$name) ? $this->$name : null;
     }
 
 

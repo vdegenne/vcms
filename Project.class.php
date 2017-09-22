@@ -1,14 +1,6 @@
 <?php
 namespace vcms;
 
-use vcms\utils\Object;
-
-require_once 'ProjectConfig.class.php';
-require_once 'VObject.class.php';
-require_once 'Object.class.php';
-require_once __DIR__ . '/ConfigurableObject.class.php';
-
-
 
 class Project extends ConfigurableObject
 {
@@ -20,11 +12,6 @@ class Project extends ConfigurableObject
      * @var Project
      */
     static protected $Project;
-
-    /**
-     * @var Array
-     */
-    protected $include_dirpaths;
 
     /**
      * Location of the project.
@@ -44,16 +31,8 @@ class Project extends ConfigurableObject
     {
         parent::__construct();
 
-        $this->location = dirname(getcwd());
+        $this->location = PROJECT_LOCATION;
         chdir($this->location);
-        define('PROJECT_LOCATION', $this->location);
-        /*
-         * The include dirpaths are used for the autoloader.
-         * The autoloader will automatically search for the classes
-         * to include from these directories (recursively)
-         */
-        $this->add_include_dirpaths(__DIR__);
-        $this->add_include_dirpaths($this->location . '/' . Project::INCLUDES_DIRNAME);
 
         /* load the Project configurations */
         $this->load_configurations();
@@ -75,23 +54,6 @@ class Project extends ConfigurableObject
 
 
 
-    function add_include_dirpaths (...$dirpaths)
-    {
-        foreach ($dirpaths as $p) {
-            set_include_path($p);
-            $this->include_dirpaths[] = $p;
-        }
-    }
-
-    function get_include_dirpaths ()
-    {
-        return $this->include_dirpaths;
-    }
-
-
-
-
-
     private function load_configurations ()
     {
         $configFilepath = $this->location . '/' . ProjectConfig::CONFIGURATION_FILENAME;
@@ -99,8 +61,6 @@ class Project extends ConfigurableObject
             throw new \Exception('configuration file not found.');
         }
 
-//        $json = json_decode(file_get_contents($configFilepath));
-//        $this->Config = Object::cast($json, '\vcms\ProjectConfig');
         $this->Config = ProjectConfig::construct_from_file($configFilepath);
     }
 

@@ -28,16 +28,19 @@ class WebResource extends Resource {
         }
     }
 
-    function process_response (string $processorFilepath = null, ...$globals): string
+    function process (string $processorFilepath = null, ...$globals)
     {
-
-        foreach ($GLOBALS as $globalname => $globalvalue) {
-            global $$globalname;
-        }
+        global $Project, $Session;
+        $Resource = $this;
 
         $title = $this->Config->metadatas->title;
-        $description = @$this->Config->metadatas->description;
-        $keywords = @$this->Config->metadatas->keywords;
+        if (isset($this->Config->metadatas->description)) {
+            $description = @$this->Config->metadatas->description;
+        }
+        if (isset($this->Config->metadatas->keywords)) {
+            $keywords = @$this->metadatas->keywords;
+        }
+
 
         $head = $this->dirpath . '/' . self::HEAD_FILENAME;
         $body = $this->dirpath . '/' . self::BODY_FILENAME;
@@ -45,16 +48,14 @@ class WebResource extends Resource {
         $inlines = '';
         foreach ($this->inlines as $i) {
             /** @var PlainResource $i */
-            $i->process_response();
-            $inlines .= $i->Response->content;
+            $i->process();
+            $inlines .= $i->content;
         }
 
         ob_start();
         include 'layouts/structure.php';
-        $this->Response->content = ob_get_contents();
+        $this->content = ob_get_contents();
         ob_end_clean();
-
-        return parent::process_response();
     }
 
 }

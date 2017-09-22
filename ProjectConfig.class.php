@@ -2,7 +2,8 @@
 namespace vcms;
 
 
-require __DIR__ . '/Config.class.php';
+require_once __DIR__ . '/Config.class.php';
+
 
 class ProjectConfig extends Config
 {
@@ -25,6 +26,7 @@ class ProjectConfig extends Config
      */
     public $db_credentials_search_paths;
 
+    public $session_user_classname;
 
 
     function process_attributes ()

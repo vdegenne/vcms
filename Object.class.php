@@ -23,7 +23,7 @@ namespace vcms\utils;
 class Object
 {
 
-    static function cast ($sourceObject, $destination)
+    static function cast ($sourceObject, $destination, bool $overflow = false)
     {
         if (is_string($destination)) {
             $destination = new $destination();
@@ -40,7 +40,9 @@ class Object
                 $propDest->setAccessible(true);
                 $propDest->setValue($destination, $value);
             } else {
-                //$destination->$name = $value;
+                if ($overflow) {
+                    $destination->$name = $value;
+                }
             }
         }
         return $destination;

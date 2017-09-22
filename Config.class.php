@@ -61,7 +61,7 @@ class Config
 
         foreach ($required as $r) {
             if (!isset($this->{$r})) {
-                throw new Exception("property \"$r\" missing from the configuration file.");
+                trigger_error("Property \"$r\" missing from the configuration file.");
             }
         }
     }
