@@ -8,14 +8,11 @@ use vcms\resources\VResource;
 
 class TranslationsManager extends EntityManager {
 
-    /**
-     * @param string|null $tablename
-     * @param string|null $objectname
-     * @param Database|null $Database
-     * @return TranslationsManager
-     * @throws \Exception
-     */
-    static function get (string $tablename = null, string $objectname = null, Database $Database = null) : EntityManager
+    
+    static function get (string $tablename = null,
+                         string $objectname = null,
+                         Database $Database = null,
+                         bool $preventEval = false): EntityManager
     {
         /** @var VResource $Resource */
         /* should change to global Project ? */
@@ -30,7 +27,7 @@ class TranslationsManager extends EntityManager {
         return parent::get($translationTable, 'vcms\translation\Translation', $Database);
     }
 
-    function get_page_translations (string $pagename, string $lang) : array
+    function get_page_translations (string $pagename, string $lang): array
     {
         $sql = "
 SELECT tr_id, translation

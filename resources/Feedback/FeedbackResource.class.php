@@ -52,6 +52,7 @@ class FeedbackResource extends Resource
     function process ()
     {
         $this->content = json_encode([
+            'success' => $this->success,
             'message' => $this->message,
             'data' => $this->data
         ]);
