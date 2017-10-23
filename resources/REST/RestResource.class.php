@@ -37,11 +37,10 @@ class RestResource extends VResource
     function process ()
     {
         $Resource = $this;
-        global $Session, $User;
+        global $Database, $Session, $User;
         $qs = $this->Request->QueryString;
         $Feedback = $this->Feedback;
         $Request = $this->Request;
-
 
 
         if (!$this->ensure_params()) {
@@ -59,6 +58,7 @@ class RestResource extends VResource
             foreach ($this->Config->post_params as $p) {
                 $$p = $_POST[$p];
             }
+            unset($p);
         }
 
 

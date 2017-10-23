@@ -22,10 +22,10 @@ class User extends DatabaseEntity
     public $isAuthenticated = false;
 
 
-    function get_password () {
+    function getPassword () {
         return $this->password;
     }
-    function set_password ($password) {
+    function setPassword ($password) {
         $this->password = $password;
     }
 

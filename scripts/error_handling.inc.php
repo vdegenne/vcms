@@ -14,7 +14,9 @@ function fatal_handler ()
 
 function error_handler ($errno, $errstr, $errfile, $errline)
 {
-
+    if ($errno === 2) {
+        return;
+    }
     echo 'aborting from error_handler (in ' . $errfile . ' ('. $errline . '))' . "<br>\n";
     echo $errstr . '(code: '.$errno.')';
     exit(1);

@@ -61,7 +61,7 @@ class Database extends PDO
 
 
 
-    function set_search_path ($path) {
+    function setSearchPath ($path) {
         if ($path !== $this->search_path) {
             $this->query('set search_path='.$path.',pg_catalog');
             $this->search_path = $path;

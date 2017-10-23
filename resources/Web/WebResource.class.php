@@ -2,9 +2,9 @@
 namespace vcms\resources;
 
 
-use vcms\resources\Resource;
+//use vcms\resources\Resource;
 
-class WebResource extends Resource {
+class WebResource extends VResource {
     const HEAD_FILENAME = 'head.php';
     const BODY_FILENAME = 'body.php';
 
@@ -31,6 +31,7 @@ class WebResource extends Resource {
     function process (string $processorFilepath = null, ...$globals)
     {
         global $Project, $Session;
+        $qs = $GLOBALS['QueryString'];
         $Resource = $this;
 
         $title = $this->Config->metadatas->title;

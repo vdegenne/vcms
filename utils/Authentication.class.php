@@ -23,23 +23,22 @@ class Authentication extends VObject {
     {
         global $Resource, $Session;
 
-        $sessionUserObject = $Session->get_user_classname();
-        $authTable = $Resource->authentication_table;
-
-        $usersEm = EntityManager::get($authTable, $sessionUserObject);
-
-        /** @var \PDOStatement $s */
-        $s = $usersEm->get_statement('SELECT * WHERE email=:email', $email);
-
-        if ($s->rowCount() == 0)
-            return false;
+        $usersEm = EntityManager::get(
+            $Resource->Config->authentication_table,
+            $Session->get_user_classname()
+        );
 
         /** @var User $User */
-        $User = $s->fetch();
+        $User = $usersEm->statement('SELECT * from knowledges.users WHERE email=:email', $email)->fetch();
+
+        if ($User === FALSE) {
+            return false;
+        }
+
         $User->isAuthenticated = false;
 
-        if (password_verify($password, $User->get_password())) {
-            $User->set_password(null);
+        if (password_verify($password, $User->getPassword())) {
+            $User->setPassword(null);
             $User->isAuthenticated = true;
             self::$User = $User;
             $Session->User = $User;
